@@ -3,7 +3,7 @@
 // include 'bootstrap.php';
 $dbi = new mysqli(HOST,USER,PASS,DB);
 // include 'class.uuid.php';
-
+$dbi = new mysqli('192.168.131.250','remoteuser','','smdb');
 
 function dump($txt)
 {
@@ -36,7 +36,7 @@ function guidv4($data = null) {
 // https://epidemcenter.moph.go.th/epidem/api/LookupTable?table_name=epidem_risk_history_type
 
 
-$sql = "SELECT * FROM `opselfisolation_detail` WHERE `registerdate` = '2022-07-15'";
+$sql = "SELECT * FROM `opselfisolation_detail` WHERE `registerdate` = '2022-07-19'";
 $q = $dbi->query($sql);
 ?>
 <style>
@@ -699,16 +699,17 @@ $q = $dbi->query($sql);
 <script>
     function send_api(idcard){
 
-
-        console.log(document.getElementById(idcard+"[cid]").value);
-        console.log(document.getElementById(idcard+"[prefix]").value);
-        console.log(document.getElementById(idcard+"[first_name]").value);
-        console.log(document.getElementById(idcard+"[last_name]").value);
+        validate_form(idcard);
+        // console.log(document.getElementById(idcard+"[cid]").value);
+        // console.log(document.getElementById(idcard+"[prefix]").value);
+        // console.log(document.getElementById(idcard+"[first_name]").value);
+        // console.log(document.getElementById(idcard+"[last_name]").value);
         
     }
 
     function validate_form(idcard){
 
+        /*
         document.getElementById(idcard+"[cid]").value;
         document.getElementById(idcard+"[prefix]").value;
         document.getElementById(idcard+"[first_name]").value;
@@ -719,16 +720,43 @@ $q = $dbi->query($sql);
         document.getElementById(idcard+"[age_m]").value;
         document.getElementById(idcard+"[age_d]").value;
         document.getElementById(idcard+"[address]").value;
-        document.getElementById(idcard+"[chw_code]").value;
-        document.getElementById(idcard+"[amp_code]").value;
-        document.getElementById(idcard+"[tmb_code]").value;
-        document.getElementById(idcard+"[epidem_report_group_id]").value;
-        document.getElementById(idcard+"[treated_hospital_code]").value;
-        document.getElementById(idcard+"[report_datetime]").value;
+        */
 
 
+        var chw_code = parseInt(document.getElementById(idcard+"[chw_code]").value.trim());
+        console.log(parseInt(chw_code));
+        if(isNaN(chw_code)){
+            alert("ข้อมูลไม่ถูกต้อง กรุณาตรวจสอบข้อมูล จังหวัด อำเภอ ตำบล อีกครั้ง\n== คำแนะนำ ==\nประสานทะเบียนเพื่อแก้ไขข้อมูล");
+            return;
+        }
         
 
+        // document.getElementById(idcard+"[amp_code]").value;
+        // document.getElementById(idcard+"[tmb_code]").value;
+
+        // ฟิกเอาไว้
+        // document.getElementById(idcard+"[epidem_report_group_id]").value;
+        // document.getElementById(idcard+"[treated_hospital_code]").value;
+        // document.getElementById(idcard+"[report_datetime]").value;
+        // document.getElementById(idcard+"[principal_diagnosis_icd10]").value;
+        // document.getElementById(idcard+"[diagnosis_icd10_list]").value;
+
+        var respirator_status = document.getElementById(idcard+"[respirator_status]").value.trim();
+        if(respirator_status==""){ 
+            alert("กรุณาเลือกข้อมูล respirator_status(ใส่เครื่องช่วยหายใจ)");
+            return;
+        }
+
+
+
+        document.getElementById(idcard+"[vaccinated_status]").value;
+        document.getElementById(idcard+"[exposure_healthcare_worker_status]").value;
+        document.getElementById(idcard+"[risk_history_type_id]").value;
+        document.getElementById(idcard+"[epidem_chw_code]").value;
+        document.getElementById(idcard+"[isolate_chw_code]").value;
+        document.getElementById(idcard+"[isolate_place_id]").value;
+        document.getElementById(idcard+"[epidem_lab_confirm_type_id]").value;
+        document.getElementById(idcard+"[tests_reason_type_id]").value;
 
 
 
