@@ -26,9 +26,9 @@
 
         var res1 = data.select('*').where('district').contains(this.value).fetch();
         var res2 = data.select('*').where('amphoe').contains(this.value).fetch();
-        var res12 = res1.concat(res2);
+        // var res12 = res1.concat(res2);
         var res3 = data.select('*').where('province').contains(this.value).fetch();
-        var res123 = res12.concat(res3);
+        var res123 = res1.concat(res2,res3);
 
         var resTxt = '';
         for (let index = 0; index < res123.length; index++) {
