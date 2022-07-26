@@ -34,9 +34,8 @@ function guidv4($data = null) {
 // https://epidemcenter.moph.go.th/epidem/api/LookupTable?table_name=epidem_risk_history_type
 
 $date_search = $_POST['date_search'];
-$sql = "SELECT * FROM `opselfisolation_detail` WHERE `registerdate` = '$date_search'";
-$q = $dbi->query($sql);
-if($q->num_rows == 0){
+$q_opself = $dbi->query("SELECT * FROM `opselfisolation_detail` WHERE `registerdate` = '$date_search'");
+if($q_opself->num_rows == 0){
     echo "ไม่พบข้อมูล";
     exit;
 }
@@ -76,17 +75,13 @@ if($q->num_rows == 0){
     <a href="https://ddc.moph.go.th/viralpneumonia/file/g_surveillance/g_api_epidem_0165.pdf" target="_blank">รายละเอียดโครงสร้างข้อมูล</a>
 </div>
 
-
-
-
-
-<form action="epidem_send.php" method="post" id="epidem_form">
-
-
 <script>
     var all_users = [];
 </script>
 
+<div id="epidem_form_container">
+
+<form action="epidem_send.php" method="post" id="epidem_form">
 <div style="height:90%;overflow-y:scroll;">
 <table class="chk_table">
     <tr>
@@ -260,15 +255,21 @@ if($q->num_rows == 0){
         <th>รหัส TMLT</th>
     </tr>
     <?php 
-    while ($a = $q->fetch_assoc()) { 
+    while ($a = $q_opself->fetch_assoc()) { 
         $idcard = $a['idcard'];
         $opsi_id = $a['row_id'];
-
+        
         $bg_color = '';
-        $q_epidem = $dbi->query("SELECT `id` FROM `epidem` WHERE `opsi_id` = '$opsi_id' ");
-        if($q_epidem->num_rows > 0){
+        $epidem_id = '';
+        $uuid = strtoupper(guidv4());
+        $q_epidem = $dbi->query("SELECT `id`,`epidem_report_guid` FROM `epidem` WHERE `opsi_id` = '$opsi_id' ");
+        if($q_epidem->num_rows > 0){ 
+            $f_epidem = $q_epidem->fetch_assoc();
             $bg_color = 'style="background-color: #b6ffa8"';
+            $epidem_id = $f_epidem['id'];
+            $uuid = strtoupper($f_epidem['epidem_report_guid']);
         }
+        // dump($bg_color);
 
 
         $hn = $a['hn'];
@@ -417,9 +418,6 @@ if($q->num_rows == 0){
             <td></td><!-- occupation -->
 
             <!-- ข้อมูลรายละเอียดของการรายงานโรค -->
-            <?php 
-            $uuid = guidv4();
-            ?>
             <td>
                 <!-- epidem_report_guid -->
                 <?php 
@@ -427,8 +425,16 @@ if($q->num_rows == 0){
                 ?>
                 <input type="hidden" name="<?=$idcard;?>[epidem_report_guid]" id="<?=$idcard;?>[epidem_report_guid]" class="<?=$idcard;?>" value="<?=$uuid;?>">
             </td>
-            <td><!-- epidem_report_group_id -->92</td>
-            <td><!-- treated_hospital_code -->11512</td>
+            <td>
+                <!-- epidem_report_group_id -->
+                92
+                <input type="hidden" name="<?=$idcard;?>[epidem_report_group_id]" id="<?=$idcard;?>[epidem_report_group_id]" class="<?=$idcard;?>" value="92">
+            </td>
+            <td>
+                <!-- treated_hospital_code -->
+                11512
+                <input type="hidden" name="<?=$idcard;?>[treated_hospital_code]" id="<?=$idcard;?>[treated_hospital_code]" class="<?=$idcard;?>" value="11512">
+            </td>
             <td>
                 <!-- report_datetime -->
                 <?php
@@ -452,7 +458,7 @@ if($q->num_rows == 0){
                 $consent_date = $a['consent_date'];
                 echo $consent_date;
                 ?>
-                <input type="hidden" name="<?=$idcard;?>[symptom_date]" id="<?=$idcard;?>[symptom_date]" class="<?=$idcard;?>" value="<?=$consent_date;?>">
+                <input type="hidden" name="<?=$idcard;?>[treated_date]" id="<?=$idcard;?>[treated_date]" class="<?=$idcard;?>" value="<?=$consent_date;?>">
             </td>
             <td>
                 <!-- diagnosis_date -->
@@ -460,7 +466,7 @@ if($q->num_rows == 0){
                 $registerdate = $a['registerdate'];
                 echo $registerdate;
                 ?>
-                <input type="hidden" name="<?=$idcard;?>[registerdate]" id="<?=$idcard;?>[registerdate]" class="<?=$idcard;?>" value="<?=$registerdate;?>">
+                <input type="hidden" name="<?=$idcard;?>[diagnosis_date]" id="<?=$idcard;?>[diagnosis_date]" class="<?=$idcard;?>" value="<?=$registerdate;?>">
             </td>
             <td>
                 <?php 
@@ -675,7 +681,11 @@ if($q->num_rows == 0){
                 ?>
                 </select>
             </td>
-            <td><!-- patient_type -->OPD</td>
+            <td>
+                <!-- patient_type -->
+                OPD
+                <input type="hidden" name="<?=$idcard;?>[patient_type]" id="<?=$idcard;?>[patient_type]" class="<?=$idcard;?>" value="OPD">
+            </td>
 
             <td><!-- epidem_covid_cluster_type_id --></td>
             <td><!-- cluster_latitude --></td>
@@ -730,6 +740,7 @@ if($q->num_rows == 0){
             <td>
                 <button onclick="send_api('<?=$idcard;?>')" type="button">ส่งข้อมูลรายคน</button>
                 <input type="hidden" name="<?=$idcard;?>[opsi_id]" id="<?=$idcard;?>[opsi_id]" class="<?=$idcard;?>" value="<?=$opsi_id;?>">
+                <input type="hidden" name="<?=$idcard;?>[epidem_id]" id="<?=$idcard;?>[epidem_id]" class="<?=$idcard;?>" value="<?=$epidem_id;?>">
                 <input type="hidden" name="idcard[]" id="" value="<?=$idcard;?>">
             </td>
         </tr>
@@ -742,6 +753,9 @@ if($q->num_rows == 0){
     <button type="button" onclick="send_all_users();">ส่งข้อมูลทั้งหมด</button>
 </div>
 </form>
+
+<!-- End form container -->
+</div>
 
 <script> 
     function newXmlHttp(){
@@ -810,29 +824,47 @@ if($q->num_rows == 0){
              * [] change color background
              */
 
-            var items = document.getElementsByClassName(idcard);
+            
+
+            // const el = document.createElement("form");
+            // el.setAttribute("style",'display:none;');
+            // el.setAttribute("id","single_form");
+            // el.setAttribute("action","epidem_send.php");
+            // el.setAttribute("method","post");
+
             var test_str = [];
+            var items = document.getElementsByClassName(idcard);
             for (let index = 0; index < items.length; index++) {
                 const element = items[index];
+                // el.appendChild(element);
                 test_str.push(encodeURIComponent(element.id)+"="+encodeURIComponent(element.value));
             }
             test_str.push(encodeURIComponent("single")+"="+encodeURIComponent("yes"));
             test_str.push(encodeURIComponent("idcard")+"="+encodeURIComponent(idcard));
             var data = test_str.join("&");
 
+            // document.getElementById("epidem_form_container").appendChild(el);
+            // สร้างฟอร์มจาก dom แล้ว submit ไปเลย เพราะต้องส่ง api ผ่าน php
+
+
+            
             var req = newXmlHttp();
             req.open('POST', 'epidem_send.php', true);
             req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-            // req.onreadystatechange = function() {
-            //     if (this.readyState === 4) {
-            //         if (this.status >= 200 && this.status < 400) { 
+            req.onreadystatechange = function() {
+                if (this.readyState === 4) {
+                    if (this.status >= 200 && this.status < 400) { 
 
+                        // MessageCode: 500
+                        // MessageCode: 200
+                        var data = JSON.parse(this.response);
+                        console.log(data);
 
-            //         } else {
-            //             // Error :(
-            //         }
-            //     }
-            // };
+                    } else {
+                        // Error :(
+                    }
+                }
+            };
             req.send(data);
 
 
