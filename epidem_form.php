@@ -44,7 +44,7 @@ if($q_opself->num_rows == 0){
 <style>
     *{
         font-family: "TH SarabunPSK";
-        font-size: 16px;
+        font-size: 18px;
     }
     body{
         margin: 0;
@@ -70,9 +70,31 @@ if($q_opself->num_rows == 0){
         /*border-top-width:3px;*/ /*only relevant for first row*/
         /*margin-top:-3px;*/ /*compensate for top border*/
     }
+    #noti-alert{
+        background-color: #ffc6c6;
+        border: 2px solid #464600;
+        text-align: center;
+        width: 600px;
+        position: absolute;
+        left: 0;
+        right: 0;
+        margin-left: auto;
+        margin-right: auto;
+        top: 50%;
+    }
+    #noti-btn{
+        background-color: #bbbbbb;
+    }
+    #noti-btn:hover{
+        cursor:pointer;
+    }
+    #noti-content{
+        padding: 4px;
+        font-weight: bold;
+    }
 </style>
 <div>
-    <a href="https://ddc.moph.go.th/viralpneumonia/file/g_surveillance/g_api_epidem_0165.pdf" target="_blank">รายละเอียดโครงสร้างข้อมูล</a>
+    <h3>ข้อมูลผู้ป่วยนอก Covid-19 (ข้อมูลเบื้องต้นจากการซักประวัติ Covid-19 กรณี OP SI)</h3> <a href="https://ddc.moph.go.th/viralpneumonia/file/g_surveillance/g_api_epidem_0165.pdf" target="_blank">รายละเอียดโครงสร้างข้อมูล</a>
 </div>
 
 <script>
@@ -269,8 +291,6 @@ if($q_opself->num_rows == 0){
             $epidem_id = $f_epidem['id'];
             $uuid = strtoupper($f_epidem['epidem_report_guid']);
         }
-        // dump($bg_color);
-
 
         $hn = $a['hn'];
         $qop = $dbi->query("SELECT `yot`,`name`,`surname`,`passport`,`nation`,`sex`,`dbirth`,`married`,`address`,`tambol`,`ampur`,`changwat`,
@@ -740,6 +760,7 @@ if($q_opself->num_rows == 0){
             <td>
                 <button onclick="send_api('<?=$idcard;?>')" type="button">ส่งข้อมูลรายคน</button>
                 <input type="hidden" name="<?=$idcard;?>[opsi_id]" id="<?=$idcard;?>[opsi_id]" class="<?=$idcard;?>" value="<?=$opsi_id;?>">
+                <input type="hidden" name="<?=$idcard;?>[hn]" id="<?=$idcard;?>[hn]" class="<?=$idcard;?>" value="<?=$hn;?>">
                 <input type="hidden" name="<?=$idcard;?>[epidem_id]" id="<?=$idcard;?>[epidem_id]" class="<?=$idcard;?>" value="<?=$epidem_id;?>">
                 <input type="hidden" name="idcard[]" id="" value="<?=$idcard;?>">
             </td>
@@ -755,6 +776,11 @@ if($q_opself->num_rows == 0){
 </form>
 
 <!-- End form container -->
+</div>
+
+<div id="noti-alert" style="display:none;">
+    <div id="noti-btn">[ ปิด ]</div>
+    <div id="noti-content"> some wording alert </div>
 </div>
 
 <script> 
@@ -817,51 +843,37 @@ if($q_opself->num_rows == 0){
             
         }else{
 
-            /**
-             * [] show icon loading...
-             * [] send post and save
-             * [] close icon loading...
-             * [] change color background
-             */
-
-            
-
-            // const el = document.createElement("form");
-            // el.setAttribute("style",'display:none;');
-            // el.setAttribute("id","single_form");
-            // el.setAttribute("action","epidem_send.php");
-            // el.setAttribute("method","post");
-
             var test_str = [];
             var items = document.getElementsByClassName(idcard);
             for (let index = 0; index < items.length; index++) {
                 const element = items[index];
-                // el.appendChild(element);
                 test_str.push(encodeURIComponent(element.id)+"="+encodeURIComponent(element.value));
             }
             test_str.push(encodeURIComponent("single")+"="+encodeURIComponent("yes"));
             test_str.push(encodeURIComponent("idcard")+"="+encodeURIComponent(idcard));
             var data = test_str.join("&");
 
-            // document.getElementById("epidem_form_container").appendChild(el);
-            // สร้างฟอร์มจาก dom แล้ว submit ไปเลย เพราะต้องส่ง api ผ่าน php
-
-
-            
             var req = newXmlHttp();
             req.open('POST', 'epidem_send.php', true);
             req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
             req.onreadystatechange = function() {
                 if (this.readyState === 4) {
                     if (this.status >= 200 && this.status < 400) { 
-
-                        // MessageCode: 500
-                        // MessageCode: 200
                         var data = JSON.parse(this.response);
-                        console.log(data);
+                        if(data.MessageCode==200){
 
+                            document.getElementById(idcard+"[row]").setAttribute("style","background-color: #b6ffa8");
+                            document.getElementById(idcard+"[epidem_id]").value = data.apidem_id;
+                            document.getElementById('noti-content').innerHTML = "บันทึกข้อมูลเรียบร้อย";
+                            document.getElementById('noti-alert').style.display = '';
+
+                        }else if(data.MessageCode==500){
+                            document.getElementById('noti-content').innerHTML = data.Message;
+                            document.getElementById('noti-alert').style.display = '';
+                        }
                     } else {
                         // Error :(
+                        
                     }
                 }
             };
@@ -960,5 +972,8 @@ if($q_opself->num_rows == 0){
 
     }
 
+    document.getElementById('noti-btn').onclick = function(){
+        document.getElementById('noti-alert').style.display = 'none';
+    }
 
 </script>

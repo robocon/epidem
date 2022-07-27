@@ -110,8 +110,12 @@ $officer = $main['officer'];
 $send_data = $main['send_data'];
 
 
+$sm3_prefix = iconv('UTF-8', 'TIS-620', $prefix);
+$sm3_first_name = iconv('UTF-8', 'TIS-620', $first_name);
+$sm3_last_name = iconv('UTF-8', 'TIS-620', $last_name);
+$sm3_informer_name = iconv('UTF-8', 'TIS-620', $informer_name);
 
-
+$send_back_apidem_id = 0;
 if(empty($epidem_id)){
     $sql = "INSERT INTO `epidem` ( 
         `id`, `opsi_id`, `cid`, `hn`, `passport_no`, `prefix`, 
@@ -127,12 +131,12 @@ if(empty($epidem_id)){
         `lab_report_date`, `lab_report_result`, `specimen_date`, `specimen_place_id`, `tests_reason_type_id`, `lab_his_ref_code`, 
         `lab_his_ref_name`, `tmlt_code`, `date_add`, `date_update`, `officer`, `send_data` 
     ) VALUES (
-        NULL, '$opsi_id', '$cid', '$hn', '$passport_no', '$prefix', 
-        '$first_name', '$last_name', '$nationality', '$gender', '$birth_date', '$age_y', 
+        NULL, '$opsi_id', '$cid', '$hn', '$passport_no', '$sm3_prefix', 
+        '$sm3_first_name', '$sm3_last_name', '$nationality', '$gender', '$birth_date', '$age_y', 
         '$age_m', '$age_d', '$marital_status_id', '$address', '$moo', '$road', 
         '$chw_code', '$amp_code', '$tmb_code', '$mobile_phone', '$occupation', '$epidem_report_guid', 
         '$epidem_report_group_id', '$treated_hospital_code', '$report_datetime', '$onset_date', '$treated_date', '$diagnosis_date', 
-        '$informer_name', '$principal_diagnosis_icd10', '$diagnosis_icd10_list', '$epidem_person_status_id', '$epidem_symptom_type_id', '$pregnant_status', 
+        '$sm3_informer_name', '$principal_diagnosis_icd10', '$diagnosis_icd10_list', '$epidem_person_status_id', '$epidem_symptom_type_id', '$pregnant_status', 
         '$respirator_status', '$epidem_accommodation_type_id', '$vaccinated_status', '$exposure_epidemic_area_status', '$exposure_healthcare_worker_status', '$exposure_closed_contact_status', 
         '$exposure_occupation_status', '$exposure_travel_status', '$risk_history_type_id', '$epidem_address', '$epidem_moo', '$epidem_road', 
         '$epidem_chw_code', '$epidem_amp_code', '$epidem_tmb_code', '$location_gis_latitude', '$location_gis_longitude', '$isolate_chw_code', 
@@ -141,14 +145,14 @@ if(empty($epidem_id)){
         '$lab_his_ref_name', '$tmlt_code', '$date_add', '$date_update', '$officer', '$send_data'
     );";
     $q = $dbi->query($sql);
-
+    $send_back_apidem_id = $dbi->insert_id;
 }else{
-    $sql = "UPDATE `epidem` SET `opsi_id`='$opsi_id', `cid`='$cid', `hn`='$hn', `passport_no`='$passport_no', `prefix`='$prefix', 
-    `first_name`='$first_name', `last_name`='$last_name', `nationality`='$nationality', `gender`='$gender', `birth_date`='$birth_date', 
+    $sql = "UPDATE `epidem` SET `opsi_id`='$opsi_id', `cid`='$cid', `hn`='$hn', `passport_no`='$passport_no', `prefix`='$sm3_prefix', 
+    `first_name`='$sm3_first_name', `last_name`='$sm3_last_name', `nationality`='$nationality', `gender`='$gender', `birth_date`='$birth_date', 
     `age_y`='$age_y', `age_m`='$age_m', `age_d`='$age_d', `marital_status_id`='$marital_status_id', `address`='$address', 
     `moo`='$moo', `road`='$road', `chw_code`='$chw_code', `amp_code`='$amp_code', `tmb_code`='$tmb_code', 
     `mobile_phone`='$mobile_phone', `occupation`='$occupation', `epidem_report_guid`='$epidem_report_guid', `epidem_report_group_id`='$epidem_report_group_id', `treated_hospital_code`='$treated_hospital_code', 
-    `report_datetime`='$report_datetime', `onset_date`='$onset_date', `treated_date`='$treated_date', `diagnosis_date`='$diagnosis_date', `informer_name`='$informer_name', 
+    `report_datetime`='$report_datetime', `onset_date`='$onset_date', `treated_date`='$treated_date', `diagnosis_date`='$diagnosis_date', `informer_name`='$sm3_informer_name', 
     `principal_diagnosis_icd10`='$principal_diagnosis_icd10', `diagnosis_icd10_list`='$diagnosis_icd10_list', `epidem_person_status_id`='$epidem_person_status_id', `epidem_symptom_type_id`='$epidem_symptom_type_id', `pregnant_status`='$pregnant_status', 
     `respirator_status`='$respirator_status', `epidem_accommodation_type_id`='$epidem_accommodation_type_id', `vaccinated_status`='$vaccinated_status', `exposure_epidemic_area_status`='$exposure_epidemic_area_status', `exposure_healthcare_worker_status`='$exposure_healthcare_worker_status', 
     `exposure_closed_contact_status`='$exposure_closed_contact_status', `exposure_occupation_status`='$exposure_occupation_status', `exposure_travel_status`='$exposure_travel_status', `risk_history_type_id`='$risk_history_type_id', `epidem_address`='$epidem_address', 
@@ -160,6 +164,8 @@ if(empty($epidem_id)){
     `send_data`='$send_data' 
     WHERE `id`= '$epidem_id';";
     $q = $dbi->query($sql);
+
+    $send_back_apidem_id = $epidem_id;
 }
 
 if(empty($dbi->error)){
@@ -246,10 +252,9 @@ if(empty($dbi->error)){
     $data_postfields = json_encode($post_field);
     
     // get basic info
+/*
     $curl = curl_init();
-    // curl_setopt($curl, CURLOPT_AUTOREFERER, TRUE);
     curl_setopt($curl, CURLOPT_URL, EPIDEM_HOST."SendEPIDEM");
-
     curl_setopt($curl, CURLOPT_POST, 1);
     curl_setopt($curl, CURLOPT_POSTFIELDS, $data_postfields);
     curl_setopt($curl, CURLOPT_HTTPHEADER, array("Authorization: Bearer ".PUBLIC_KEY));
@@ -257,8 +262,11 @@ if(empty($dbi->error)){
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
     $output = curl_exec($curl);
     curl_close($curl);
+*/
+$output = '{"result":{"hospital_code":"11512","cid":"'.$idcard.'"},"MessageCode":200,"Message":"OK","RequestTime":"2022-07-27T11:06:14.459Z","EndpointPort":21005,"process_ms":62,"processing_ms":50,"req_rate":1}';
     $pt = json_decode($output, true);
     
+    $pt['apidem_id'] = $send_back_apidem_id;
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode($pt);
 
