@@ -280,22 +280,11 @@ if($q_opself->num_rows == 0){
     while ($a = $q_opself->fetch_assoc()) { 
         $idcard = $a['idcard'];
         $opsi_id = $a['row_id'];
-        
-        $bg_color = '';
-        $epidem_id = '';
-        $uuid = strtoupper(guidv4());
-        $q_epidem = $dbi->query("SELECT `id`,`epidem_report_guid` FROM `epidem` WHERE `opsi_id` = '$opsi_id' ");
-        if($q_epidem->num_rows > 0){ 
-            $f_epidem = $q_epidem->fetch_assoc();
-            $bg_color = 'style="background-color: #b6ffa8"';
-            $epidem_id = $f_epidem['id'];
-            $uuid = strtoupper($f_epidem['epidem_report_guid']);
-        }
 
         $hn = $a['hn'];
-        $qop = $dbi->query("SELECT `yot`,`name`,`surname`,`passport`,`nation`,`sex`,`dbirth`,`married`,`address`,`tambol`,`ampur`,`changwat`,
-        `phone` 
-        FROM `opcard` WHERE `hn` = '$hn' ");
+        $qop = $dbi->query("SELECT `yot`,`name`,`surname`,`passport`,`nation`,`sex`,`dbirth`,`married`,`address`,`tambol`,`ampur`,`changwat`,`phone` 
+        FROM `opcard` 
+        WHERE `hn` = '$hn' ");
         $op = $qop->fetch_assoc();
 
         $yot = iconv('TIS-620','UTF-8', $op['yot']);
@@ -329,8 +318,7 @@ if($q_opself->num_rows == 0){
         $changwat = $op['changwat'];
         $tambon = $op['tambol'];
 
-        $tb_statement = "SELECT `lgo_code` FROM `tambon` WHERE `province` = '$changwat' AND `lgo_name` = '$tambon'";
-        $qtb = $dbi->query($tb_statement);
+        $qtb = $dbi->query("SELECT `lgo_code` FROM `tambon` WHERE `province` = '$changwat' AND `lgo_name` = '$tambon'");
         if($qtb->num_rows > 0){
             $tb = $qtb->fetch_assoc();
             $pv_code = substr($tb['lgo_code'],0,2);
@@ -342,10 +330,23 @@ if($q_opself->num_rows == 0){
             $pv_code = iconv('TIS-620','UTF-8', $op['changwat']);
         }
         
-
         $qna = $dbi->query("SELECT `code` FROM `nation` WHERE `detail` = '$op_nation' ");
         $na_item = $qna->fetch_assoc();
         $na_code = $na_item['code'];
+
+
+        $bg_color = '';
+        $epidem_id = '';
+        $uuid = strtoupper(guidv4());
+        $q_epidem = $dbi->query("SELECT * FROM `epidem` WHERE `opsi_id` = '$opsi_id' ");
+        if($q_epidem->num_rows > 0){ 
+            $f_epidem = $q_epidem->fetch_assoc();
+            $bg_color = 'style="background-color: #b6ffa8"';
+            $epidem_id = $f_epidem['id'];
+            $uuid = strtoupper($f_epidem['epidem_report_guid']);
+        }
+        
+
         ?>
         <tr id="<?=$idcard;?>[row]" <?=$bg_color;?>>
             <!-- ข้อมูลทั่วไปของผู้ติดเชื้อ -->
