@@ -337,15 +337,16 @@ if($q_opself->num_rows == 0){
 
         $bg_color = '';
         $epidem_id = '';
-        $uuid = strtoupper(guidv4());
         $q_epidem = $dbi->query("SELECT * FROM `epidem` WHERE `opsi_id` = '$opsi_id' ");
         if($q_epidem->num_rows > 0){ 
             $f_epidem = $q_epidem->fetch_assoc();
             $bg_color = 'style="background-color: #b6ffa8"';
             $epidem_id = $f_epidem['id'];
             $uuid = strtoupper($f_epidem['epidem_report_guid']);
+        }else{
+            $uuid = strtoupper(guidv4());
         }
-        
+
 
         ?>
         <tr id="<?=$idcard;?>[row]" <?=$bg_color;?>>
