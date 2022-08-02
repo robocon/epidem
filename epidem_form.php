@@ -280,6 +280,14 @@ if($q_opself->num_rows == 0){
     while ($a = $q_opself->fetch_assoc()) { 
         $idcard = $a['idcard'];
         $opsi_id = $a['row_id'];
+        $onset_date = $a['symptom_date'];
+        $treated_date = $a['consent_date'];
+        $diagnosis_date = $a['registerdate'];
+        $informer_name = iconv('TIS-620', 'UTF-8', $a['officer']);
+        $epidem_person_status_id = '';
+        $tests_reason_type_id = '';
+        $isolate_place_id = '';
+        $risk_history_type_id = '';
 
         $hn = $a['hn'];
         $qop = $dbi->query("SELECT `yot`,`name`,`surname`,`passport`,`nation`,`sex`,`dbirth`,`married`,`address`,`tambol`,`ampur`,`changwat`,`phone` 
@@ -293,6 +301,7 @@ if($q_opself->num_rows == 0){
         $passport = $op['passport'];
         $op_nation = $op['nation'];
         $phone = $op['phone'];
+        
 
         $sex = iconv('TIS-620','UTF-8', $op['sex']);
         $sex = ($sex=='ช') ? '1': '2';
@@ -334,7 +343,7 @@ if($q_opself->num_rows == 0){
         $na_item = $qna->fetch_assoc();
         $na_code = $na_item['code'];
 
-
+        $curr_date = date('Y-m-d\TH:i:s.v'); // Format YYYY-mm-ddTHH:ii:ss.000
         $bg_color = '';
         $epidem_id = '';
         $q_epidem = $dbi->query("SELECT * FROM `epidem` WHERE `opsi_id` = '$opsi_id' ");
@@ -343,6 +352,48 @@ if($q_opself->num_rows == 0){
             $bg_color = 'style="background-color: #b6ffa8"';
             $epidem_id = $f_epidem['id'];
             $uuid = strtoupper($f_epidem['epidem_report_guid']);
+
+            $yot = iconv('TIS-620','UTF-8', $f_epidem['prefix']);
+            $name = iconv('TIS-620','UTF-8', $f_epidem['first_name']);
+            $surname = iconv('TIS-620','UTF-8', $f_epidem['last_name']);
+
+            $passport = $f_epidem['passport'];
+            $na_code = $f_epidem['nationality'];
+            $sex = $f_epidem['gender'];
+            $dbirth = $f_epidem['birth_date'];
+            $testY = $f_epidem['age_y'];
+            $testM = $f_epidem['age_m'];
+            $testD = $f_epidem['age_d'];
+            $married_code = $f_epidem['marital_status_id'];
+            
+            $address = iconv('TIS-620','UTF-8', $f_epidem['address']);
+            $pv_code = $f_epidem['chw_code'];
+            $ap_code = $f_epidem['amp_code'];
+            $tb_code = $f_epidem['tmb_code'];
+            $phone = $f_epidem['mobile_phone'];
+
+            $curr_date = $f_epidem['report_datetime'];
+            $onset_date = $f_epidem['onset_date'];
+            $treated_date = $f_epidem['treated_date'];
+            $diagnosis_date = $f_epidem['diagnosis_date'];
+            $informer_name = iconv('TIS-620','UTF-8', $f_epidem['informer_name']);
+
+            $epidem_person_status_id = $f_epidem['epidem_person_status_id'];
+
+            $epidem_symptom_type_id = $f_epidem['epidem_symptom_type_id'];
+            $pregnant_status = $f_epidem['pregnant_status'];
+            $respirator_status = $f_epidem['respirator_status'];
+
+            $exposure_epidemic_area_status = $f_epidem['exposure_epidemic_area_status'];
+            $exposure_healthcare_worker_status = $f_epidem['exposure_healthcare_worker_status'];
+            $exposure_closed_contact_status = $f_epidem['exposure_closed_contact_status'];
+            $exposure_occupation_status = $f_epidem['exposure_occupation_status'];
+            $exposure_travel_status = $f_epidem['exposure_travel_status'];
+
+            $risk_history_type_id = $f_epidem['risk_history_type_id'];
+            $isolate_place_id = $f_epidem['isolate_place_id'];
+            $tests_reason_type_id = $f_epidem['tests_reason_type_id'];
+
         }else{
             $uuid = strtoupper(guidv4());
         }
@@ -412,7 +463,7 @@ if($q_opself->num_rows == 0){
             </td>
             <td>
                 <?=$married_code;?>
-                <input type="hidden" name="<?=$idcard;?>[married_code]" id="<?=$idcard;?>[married_code]" class="<?=$idcard;?>" value="<?=$married_code;?>">
+                <input type="hidden" name="<?=$idcard;?>[marital_status_id]" id="<?=$idcard;?>[marital_status_id]" class="<?=$idcard;?>" value="<?=$married_code;?>">
             </td>
             <td>
                 <?=$address;?>
@@ -460,7 +511,7 @@ if($q_opself->num_rows == 0){
             <td>
                 <!-- report_datetime -->
                 <?php
-                $curr_date = date('Y-m-d\TH:i:s.v'); // Format YYYY-mm-ddTHH:ii:ss.000
+                
                 echo $curr_date;
                 ?>
                 <input type="hidden" name="<?=$idcard;?>[report_datetime]" id="<?=$idcard;?>[report_datetime]" class="<?=$idcard;?>" value="<?=$curr_date;?>">
@@ -468,34 +519,30 @@ if($q_opself->num_rows == 0){
             <td>
                 <!-- onset_date -->
                 <?php 
-                $symptom_date = $a['symptom_date'];
-                echo $symptom_date;
+                echo $onset_date;
                 ?>
-                <input type="hidden" name="<?=$idcard;?>[onset_date]" id="<?=$idcard;?>[onset_date]" class="<?=$idcard;?>" value="<?=$symptom_date;?>">
+                <input type="hidden" name="<?=$idcard;?>[onset_date]" id="<?=$idcard;?>[onset_date]" class="<?=$idcard;?>" value="<?=$onset_date;?>">
             </td>
 
             <td>
                 <!-- treated_date -->
                 <?php 
-                $consent_date = $a['consent_date'];
-                echo $consent_date;
+                echo $treated_date;
                 ?>
-                <input type="hidden" name="<?=$idcard;?>[treated_date]" id="<?=$idcard;?>[treated_date]" class="<?=$idcard;?>" value="<?=$consent_date;?>">
+                <input type="hidden" name="<?=$idcard;?>[treated_date]" id="<?=$idcard;?>[treated_date]" class="<?=$idcard;?>" value="<?=$treated_date;?>">
             </td>
             <td>
                 <!-- diagnosis_date -->
                 <?php 
-                $registerdate = $a['registerdate'];
-                echo $registerdate;
+                echo $diagnosis_date;
                 ?>
-                <input type="hidden" name="<?=$idcard;?>[diagnosis_date]" id="<?=$idcard;?>[diagnosis_date]" class="<?=$idcard;?>" value="<?=$registerdate;?>">
+                <input type="hidden" name="<?=$idcard;?>[diagnosis_date]" id="<?=$idcard;?>[diagnosis_date]" class="<?=$idcard;?>" value="<?=$diagnosis_date;?>">
             </td>
             <td>
                 <?php 
-                $officer = iconv('TIS-620', 'UTF-8', $a['officer']);
-                echo $officer;
+                echo $informer_name;
                 ?>
-                <input type="hidden" name="<?=$idcard;?>[informer_name]" id="<?=$idcard;?>[informer_name]" class="<?=$idcard;?>" value="<?=$officer;?>">
+                <input type="hidden" name="<?=$idcard;?>[informer_name]" id="<?=$idcard;?>[informer_name]" class="<?=$idcard;?>" value="<?=$informer_name;?>">
             </td>
             <td>
                 <!-- principal_diagnosis_icd10 -->
@@ -512,10 +559,10 @@ if($q_opself->num_rows == 0){
                 $p_status = array(1 => 'กำลังรักษา' , 2 => 'หายจากโรคแล้ว' , 3 => 'เสียชีวิต', 4 => 'ไม่ทราบ');
                 ?>
                 <select name="<?=$idcard;?>[epidem_person_status_id]" id="<?=$idcard;?>[epidem_person_status_id]" class="<?=$idcard;?>" >
-                <option value="">เลือกข้อมูล</option>
                     <?php 
-                    foreach ($p_status as $key => $s) {
-                        ?><option value="<?=$key;?>"><?=$s;?></option><?php
+                    foreach ($p_status as $key => $s) { 
+                        $selected = ($epidem_person_status_id == $key) ? 'selected="selected"' : '';
+                        ?><option value="<?=$key;?>" <?=$selected;?> ><?=$s;?></option><?php
                     }
                     ?>
                 </select>
@@ -525,13 +572,13 @@ if($q_opself->num_rows == 0){
                 $symp_list = array(1 => 'ไม่มีอาการ ' , 2 => 'มีอาการที่ ไม่เกี่ยวข้องกับระบบทางเดินหายใจ' , 3 => 'มีอาการที่เกี่ยวกับระบบทาง เดินหายใจ เช่น ปอดบวม');
                 ?>
                 <select name="<?=$idcard;?>[epidem_symptom_type_id]" id="<?=$idcard;?>[epidem_symptom_type_id]" class="<?=$idcard;?>" >
-                <option value="">เลือกข้อมูล</option>
                     <?php 
                     foreach ($symp_list as $key => $s) { 
-                        $checked = '';
-                        if($a['typerisk2']=='โรคระบบทางเดินหายใจ' && $key == 3){
-                            $checked = 'checked="checked"';
-                        }
+
+                        $checked = $epidem_symptom_type_id==$key ? 'checked="checked"' : '';
+                        // if($a['typerisk2']=='โรคระบบทางเดินหายใจ' && $key == 3){
+                        //     $checked = 'checked="checked"';
+                        // }
                         ?><option value="<?=$key;?>" <?=$checked;?> ><?=$s;?></option><?php
                     }
                     ?>
@@ -543,11 +590,10 @@ if($q_opself->num_rows == 0){
                 $preg_list = array('N' => 'ไม่ตั้งครรภ์', 'Y' => 'ตั้งครรภ์');
                 ?>
                 <select name="<?=$idcard;?>[pregnant_status]" id="<?=$idcard;?>[pregnant_status]" class="<?=$idcard;?>" >
-                <option value="">เลือกข้อมูล</option>
                     <?php 
                     foreach ($preg_list as $key => $s) { 
-                        $checked = '';
-                        ?><option value="<?=$key;?>"><?=$s;?></option><?php
+                        $checked = ( $pregnant_status == $key ) ? 'checked="checked"' : '' ;
+                        ?><option value="<?=$key;?>" <?=$checked;?> ><?=$s;?></option><?php
                     }
                     ?>
                 </select>
@@ -561,7 +607,7 @@ if($q_opself->num_rows == 0){
                 <option value="">เลือกข้อมูล</option>
                     <?php 
                     foreach ($preg_list as $key => $s) { 
-                        $selected = ($key=='N') ? 'selected="selected"' : '';
+                        $selected = ($respirator_status==$key) ? 'selected="selected"' : '';
                         ?><option value="<?=$key;?>" <?=$selected;?> ><?=$s;?></option><?php
                     }
                     ?>
@@ -603,7 +649,7 @@ if($q_opself->num_rows == 0){
                     <?php 
                     foreach ($heal_worker_list as $s) { 
 
-                        $selected = ($s=='N') ? 'selected="selected"' : '';
+                        $selected = ($s==$exposure_healthcare_worker_status) ? 'selected="selected"' : '';
 
                         ?><option value="<?=$s;?>" <?=$selected;?> ><?=$s;?></option><?php
                     }
@@ -619,7 +665,8 @@ if($q_opself->num_rows == 0){
                 <option value="">เลือกข้อมูล</option>
                     <?php 
                     foreach ($closed_contact_list as $s) { 
-                        ?><option value="<?=$s;?>"><?=$s;?></option><?php
+                        $selected = ($s == $exposure_closed_contact_status) ? 'selected="selected"' : '';
+                        ?><option value="<?=$s;?>" <?=$selected;?> ><?=$s;?></option><?php
                     }
                     ?>
                 </select>
@@ -633,7 +680,9 @@ if($q_opself->num_rows == 0){
                 <option value="">เลือกข้อมูล</option>
                     <?php 
                     foreach ($occupation_status_list as $s) { 
-                        ?><option value="<?=$s;?>"><?=$s;?></option><?php
+                        
+                        $selected = ($s == $exposure_occupation_status) ? 'selected="selected"' : '';
+                        ?><option value="<?=$s;?>" <?=$selected;?> ><?=$s;?></option><?php
                     }
                     ?>
                 </select>
@@ -648,7 +697,9 @@ if($q_opself->num_rows == 0){
                 <option value="">เลือกข้อมูล</option>
                     <?php 
                     foreach ($travel_status_list as $s) { 
-                        ?><option value="<?=$s;?>"><?=$s;?></option><?php
+                        
+                        $selected = ($s == $exposure_travel_status) ? 'selected="selected"' : '';
+                        ?><option value="<?=$s;?>" <?=$selected;?> ><?=$s;?></option><?php
                     }
                     ?>
                 </select>
@@ -659,8 +710,11 @@ if($q_opself->num_rows == 0){
                 <option value="">เลือกข้อมูล</option>
                 <?php 
                 $risk_type_list = json_decode('[{"epidem_risk_history_type_id":1,"epidem_risk_history_type_name":"ทำงานในโรงพยาบาล/คลินิก"},{"epidem_risk_history_type_id":2,"epidem_risk_history_type_name":"ทำงานในโรงงาน/สถานประกอบการ/ประมง/การเกษตร ที่มีพนักงานตั้งแต่ 50 คนขึ้นไป"},{"epidem_risk_history_type_id":3,"epidem_risk_history_type_name":"ทำงานในตลาด/ไปตลาดเป็นประจำ"},{"epidem_risk_history_type_id":4,"epidem_risk_history_type_name":"ทำงานในแคมป์ก่อสร้าง"},{"epidem_risk_history_type_id":5,"epidem_risk_history_type_name":"ผู้ต้องขังในเรือนจำ/ทัณฑสถาน"},{"epidem_risk_history_type_id":6,"epidem_risk_history_type_name":"อยู่ในศูนย์พักพิงชั่วคราว/ศูนย์กักกัน"},{"epidem_risk_history_type_id":7,"epidem_risk_history_type_name":"มาจากต่างประเทศ (เข้าประเทศอย่างถูกกฎหมาย)"},{"epidem_risk_history_type_id":8,"epidem_risk_history_type_name":"มาจากต่างประเทศ (ลักลอบเข้าประเทศ)"},{"epidem_risk_history_type_id":9,"epidem_risk_history_type_name":"อยู่ในชุมชนแออัด"},{"epidem_risk_history_type_id":10,"epidem_risk_history_type_name":"ทำงานในหน่วยงานราชการ/ สำนักงาน/ บริษัท ที่มีพนักงานตั้งแต่ 50 คนขึ้นไป"},{"epidem_risk_history_type_id":11,"epidem_risk_history_type_name":"อยู่อาศัย หรือทำงานในศูนย์ดูแลผู้สูงอายุ/ สถานสงเคราะห์คนชราหรือดูแลผู้ป่วยโรคเรื้อรัง/ long-tern ca"},{"epidem_risk_history_type_id":12,"epidem_risk_history_type_name":"ไปหรือทำงานที่โรงเรียน/ สถาบันศึกษา/ ศูนย์เด็กเล็ก"},{"epidem_risk_history_type_id":13,"epidem_risk_history_type_name":"ประกอบอาชีพเสี่ยง (กลุ่มอาชีพที่ไม่สามารถทำงานจากที่บ้านได้ เช่น ค้าขาย รับจ้าง ขับรถสาธารณะ เป็นต้น"},{"epidem_risk_history_type_id":14,"epidem_risk_history_type_name":"ไม่มีประวัติตามข้อ 1-13 ข้างต้น"}]');
-                foreach ($risk_type_list as $key => $rt) {
-                    ?><option value="<?=$rt->epidem_risk_history_type_id;?>"><?=$rt->epidem_risk_history_type_name;?></option><?php
+                foreach ($risk_type_list as $rt) { 
+
+                    $selected = ($risk_history_type_id==$rt->epidem_risk_history_type_id) ? 'selected="selected"' : '';
+                    
+                    ?><option value="<?=$rt->epidem_risk_history_type_id;?>" <?=$selected;?> ><?=$rt->epidem_risk_history_type_name;?></option><?php
                 }
                 ?>
                 </select>
@@ -694,9 +748,10 @@ if($q_opself->num_rows == 0){
                 <option value="">เลือกข้อมูล</option>
                 <?php 
                 $isolate_place_list = json_decode('[{"epidem_covid_isolate_place_id":1,"epidem_covid_isolate_place_name":"โรงพยาบาล"},{"epidem_covid_isolate_place_id":2,"epidem_covid_isolate_place_name":"โรงพยาบาลสนาม"},{"epidem_covid_isolate_place_id":3,"epidem_covid_isolate_place_name":"Hospitel"},{"epidem_covid_isolate_place_id":4,"epidem_covid_isolate_place_name":"แยกกักในชุมชน (CI)"},{"epidem_covid_isolate_place_id":5,"epidem_covid_isolate_place_name":"ที่พักอาศัย (HI)"},{"epidem_covid_isolate_place_id":6,"epidem_covid_isolate_place_name":"อื่นๆ"}]');
-                foreach ($isolate_place_list as $key => $pl) { 
+                foreach ($isolate_place_list as $pl) { 
 
-                    $selected = ($pl->epidem_covid_isolate_place_id==5) ? 'selected="selected"' : '';
+                    $selected = ($pl->epidem_covid_isolate_place_id==$isolate_place_id) ? 'selected="selected"' : '';
+
 
                     ?><option value="<?=$pl->epidem_covid_isolate_place_id;?>" <?=$selected;?> ><?=$pl->epidem_covid_isolate_place_name;?></option><?php
                 }
@@ -749,7 +804,7 @@ if($q_opself->num_rows == 0){
                 $reason_type_list = json_decode('[{"epidem_covid_reason_type_id":1,"epidem_covid_reason_type_name":"เข้าเกณฑ์ PUI (ยกเว้นกรณีสัมผัสผู้ติดเชื้อยืนยัน)"},{"epidem_covid_reason_type_id":2,"epidem_covid_reason_type_name":"มาตรวจด้วยประวัติสัมผัสผู้ติดเชื้อในครอบครัว/ร่วมบ้าน"},{"epidem_covid_reason_type_id":3,"epidem_covid_reason_type_name":"มาตรวจด้วยประวัติสัมผัสผู้ติดเชื้อนอกครอบครัว/ที่ทำงาน/ชุมชน"},{"epidem_covid_reason_type_id":4,"epidem_covid_reason_type_name":"ขอตรวจเอง (เข้าทำงาน/ผลตรวจ ATK / เดินทางไปต่างประเทศ / กังวัล)"},{"epidem_covid_reason_type_id":5,"epidem_covid_reason_type_name":"Active case finding /Contact tracing (ค้นหาผู้สัมผัสในครอบครัว/ที่ทำงาน/ชุมชน)"},{"epidem_covid_reason_type_id":6,"epidem_covid_reason_type_name":"สุ่มตรวจเชิงรุก/คัดกรอง ในพื้นที่ที่ไม่เคยมีรายงานการติดเชื้อ/สถานที่เสี่ยง นอกสถานพยาบาล"},{"epidem_covid_reason_type_id":7,"epidem_covid_reason_type_name":"Sentinel surveillance"},{"epidem_covid_reason_type_id":8,"epidem_covid_reason_type_name":"ตรวจก่อนทำหัตการ / Admit"},{"epidem_covid_reason_type_id":9,"epidem_covid_reason_type_name":"ให้ตรวจเพิ่มเติมโดยสถานพยาบาล (เจ้าหน้าที่/พนักงาน/ญาติผู้ป่วย)"},{"epidem_covid_reason_type_id":10,"epidem_covid_reason_type_name":"อื่นๆ"}]');
                 foreach ($reason_type_list as $trt) {
 
-                    // $selected = ($trt->epidem_covid_reason_type_id==2) ? 'selected="selected"' : '' ;
+                    $selected = ($trt->epidem_covid_reason_type_id==$tests_reason_type_id) ? 'selected="selected"' : '' ;
 
                     ?><option value="<?=$trt->epidem_covid_reason_type_id;?>" <?=$selected;?> ><?=$trt->epidem_covid_reason_type_name;?></option><?php
                 }
