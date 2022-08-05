@@ -322,8 +322,8 @@ if($q_opself->num_rows == 0){
         elseif ($married=='หย่าร้าง') { $married_code = 3; }
         elseif ($married=='หม้าย') { $married_code = 4; }
 
-        // `address`,`tambol`,`ampur`,`changwat`
         $address = iconv('TIS-620','UTF-8', $op['address']);
+        // $address = $op['address'];
         $changwat = $op['changwat'];
         $tambon = $op['tambol'];
 
@@ -398,6 +398,9 @@ if($q_opself->num_rows == 0){
             $uuid = strtoupper(guidv4());
         }
 
+        if($idcard=='1570400005381'){
+            $uuid = 'AEA01163-5FEB-454F-9E4B-2F85A5204094';
+        }
 
         ?>
         <tr id="<?=$idcard;?>[row]" <?=$bg_color;?>>
@@ -604,7 +607,6 @@ if($q_opself->num_rows == 0){
                 $preg_list = array('N' => 'ไม่ใส่', 'Y' => 'ใส่');
                 ?>
                 <select name="<?=$idcard;?>[respirator_status]" id="<?=$idcard;?>[respirator_status]" class="<?=$idcard;?>" >
-                <option value="">เลือกข้อมูล</option>
                     <?php 
                     foreach ($preg_list as $key => $s) { 
                         $selected = ($respirator_status==$key) ? 'selected="selected"' : '';
@@ -819,7 +821,7 @@ if($q_opself->num_rows == 0){
                 <input type="hidden" name="<?=$idcard;?>[opsi_id]" id="<?=$idcard;?>[opsi_id]" class="<?=$idcard;?>" value="<?=$opsi_id;?>">
                 <input type="hidden" name="<?=$idcard;?>[hn]" id="<?=$idcard;?>[hn]" class="<?=$idcard;?>" value="<?=$hn;?>">
                 <input type="hidden" name="<?=$idcard;?>[epidem_id]" id="<?=$idcard;?>[epidem_id]" class="<?=$idcard;?>" value="<?=$epidem_id;?>">
-                <input type="hidden" name="idcard[]" id="" value="<?=$idcard;?>">
+                
             </td>
         </tr>
         <?php
@@ -917,7 +919,7 @@ if($q_opself->num_rows == 0){
                 if (this.readyState === 4) {
                     if (this.status >= 200 && this.status < 400) { 
                         var data = JSON.parse(this.response);
-                        if(data.MessageCode==200){
+                        if(data.MessageCode==200){ 
 
                             document.getElementById(idcard+"[row]").setAttribute("style","background-color: #b6ffa8");
                             document.getElementById(idcard+"[epidem_id]").value = data.apidem_id;

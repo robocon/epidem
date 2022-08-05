@@ -113,6 +113,7 @@ $send_data = $main['send_data'];
 $sm3_prefix = iconv('UTF-8', 'TIS-620', $prefix);
 $sm3_first_name = iconv('UTF-8', 'TIS-620', $first_name);
 $sm3_last_name = iconv('UTF-8', 'TIS-620', $last_name);
+$sm3_address = iconv('UTF-8', 'TIS-620', $address);
 $sm3_informer_name = iconv('UTF-8', 'TIS-620', $informer_name);
 
 $send_back_apidem_id = 0;
@@ -133,7 +134,7 @@ if(empty($epidem_id)){
     ) VALUES (
         NULL, '$opsi_id', '$cid', '$hn', '$passport_no', '$sm3_prefix', 
         '$sm3_first_name', '$sm3_last_name', '$nationality', '$gender', '$birth_date', '$age_y', 
-        '$age_m', '$age_d', '$marital_status_id', '$address', '$moo', '$road', 
+        '$age_m', '$age_d', '$marital_status_id', '$sm3_address', '$moo', '$road', 
         '$chw_code', '$amp_code', '$tmb_code', '$mobile_phone', '$occupation', '$epidem_report_guid', 
         '$epidem_report_group_id', '$treated_hospital_code', '$report_datetime', '$onset_date', '$treated_date', '$diagnosis_date', 
         '$sm3_informer_name', '$principal_diagnosis_icd10', '$diagnosis_icd10_list', '$epidem_person_status_id', '$epidem_symptom_type_id', '$pregnant_status', 
@@ -149,7 +150,7 @@ if(empty($epidem_id)){
 }else{
     $sql = "UPDATE `epidem` SET `opsi_id`='$opsi_id', `cid`='$cid', `hn`='$hn', `passport_no`='$passport_no', `prefix`='$sm3_prefix', 
     `first_name`='$sm3_first_name', `last_name`='$sm3_last_name', `nationality`='$nationality', `gender`='$gender', `birth_date`='$birth_date', 
-    `age_y`='$age_y', `age_m`='$age_m', `age_d`='$age_d', `marital_status_id`='$marital_status_id', `address`='$address', 
+    `age_y`='$age_y', `age_m`='$age_m', `age_d`='$age_d', `marital_status_id`='$marital_status_id', `address`='$sm3_address', 
     `moo`='$moo', `road`='$road', `chw_code`='$chw_code', `amp_code`='$amp_code', `tmb_code`='$tmb_code', 
     `mobile_phone`='$mobile_phone', `occupation`='$occupation', `epidem_report_guid`='$epidem_report_guid', `epidem_report_group_id`='$epidem_report_group_id', `treated_hospital_code`='$treated_hospital_code', 
     `report_datetime`='$report_datetime', `onset_date`='$onset_date', `treated_date`='$treated_date', `diagnosis_date`='$diagnosis_date', `informer_name`='$sm3_informer_name', 
@@ -248,11 +249,10 @@ if(empty($dbi->error)){
             "tmlt_code" => $tmlt_code
         )
     );
-    // dump($post_field);
+    
     $data_postfields = json_encode($post_field);
     
     // get basic info
-/*
     $curl = curl_init();
     curl_setopt($curl, CURLOPT_URL, EPIDEM_HOST."SendEPIDEM");
     curl_setopt($curl, CURLOPT_POST, 1);
@@ -262,10 +262,9 @@ if(empty($dbi->error)){
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
     $output = curl_exec($curl);
     curl_close($curl);
-*/
-$output = '{"result":{"hospital_code":"11512","cid":"'.$idcard.'"},"MessageCode":200,"Message":"OK","RequestTime":"2022-07-27T11:06:14.459Z","EndpointPort":21005,"process_ms":62,"processing_ms":50,"req_rate":1}';
+
+// $output = '{"result":{"hospital_code":"11512","cid":"'.$idcard.'"},"MessageCode":200,"Message":"OK","RequestTime":"2022-07-27T11:06:14.459Z","EndpointPort":21005,"process_ms":62,"processing_ms":50,"req_rate":1}';
     $pt = json_decode($output, true);
-    
     $pt['apidem_id'] = $send_back_apidem_id;
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode($pt);
