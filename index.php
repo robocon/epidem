@@ -1,2 +1,2 @@
 <?php 
-header("Location: apidem.php");
+header("Location: epidem.php");
