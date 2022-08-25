@@ -2,7 +2,7 @@
 session_start();
 include 'config.php';
 $dbi = new mysqli(HOST,USER,PASS,DB);
-
+$dbi->query("SET NAMES UTF8");
 function dump($txt)
 {
     echo "<pre>";
@@ -278,6 +278,7 @@ if($q_opself->num_rows == 0){
     </tr>
     <?php 
     while ($a = $q_opself->fetch_assoc()) { 
+
         $idcard = $a['idcard'];
         $opsi_id = $a['row_id'];
         $onset_date = $a['symptom_date'];
@@ -295,15 +296,21 @@ if($q_opself->num_rows == 0){
         WHERE `hn` = '$hn' ");
         $op = $qop->fetch_assoc();
 
-        $yot = iconv('TIS-620','UTF-8', $op['yot']);
-        $name = iconv('TIS-620','UTF-8', $op['name']);
-        $surname = iconv('TIS-620','UTF-8', $op['surname']);
+        // $yot = iconv('TIS-620','UTF-8', $op['yot']);
+        // $name = iconv('TIS-620','UTF-8', $op['name']);
+        // $surname = iconv('TIS-620','UTF-8', $op['surname']);
+        $yot = $op['yot'];
+        $name = $op['name'];
+        $surname = $op['surname'];
+
         $passport = $op['passport'];
         $op_nation = $op['nation'];
         $phone = $op['phone'];
         
 
-        $sex = iconv('TIS-620','UTF-8', $op['sex']);
+        // $sex = iconv('TIS-620','UTF-8', $op['sex']);
+        $sex = $op['sex'];
+
         $sex = ($sex=='ช') ? '1': '2';
 
         $thYear = substr($op['dbirth'],0,4);
@@ -315,15 +322,17 @@ if($q_opself->num_rows == 0){
         $testM = $diff->format('%m');
         $testD = $diff->format('%d');
 
-        $married = iconv('TIS-620','UTF-8', $op['married']);
+        // $married = iconv('TIS-620','UTF-8', $op['married']);
+        $married = $op['married'];
+
         // (1=โสด, 2=คู่, 3=หย่าร้าง, 4=หม้าย)
         $married_code = '1';
         if($married=='สมรส'){ $married_code = 2; }
         elseif ($married=='หย่าร้าง') { $married_code = 3; }
         elseif ($married=='หม้าย') { $married_code = 4; }
 
-        $address = iconv('TIS-620','UTF-8', $op['address']);
-        // $address = $op['address'];
+        // $address = iconv('TIS-620','UTF-8', $op['address']);
+        $address = $op['address'];
         $changwat = $op['changwat'];
         $tambon = $op['tambol'];
 
@@ -353,9 +362,12 @@ if($q_opself->num_rows == 0){
             $epidem_id = $f_epidem['id'];
             $uuid = strtoupper($f_epidem['epidem_report_guid']);
 
-            $yot = iconv('TIS-620','UTF-8', $f_epidem['prefix']);
-            $name = iconv('TIS-620','UTF-8', $f_epidem['first_name']);
-            $surname = iconv('TIS-620','UTF-8', $f_epidem['last_name']);
+            // $yot = iconv('TIS-620','UTF-8', $f_epidem['prefix']);
+            // $name = iconv('TIS-620','UTF-8', $f_epidem['first_name']);
+            // $surname = iconv('TIS-620','UTF-8', $f_epidem['last_name']);
+            $yot = $f_epidem['prefix'];
+            $name = $f_epidem['first_name'];
+            $surname = $f_epidem['last_name'];
 
             $passport = $f_epidem['passport'];
             $na_code = $f_epidem['nationality'];
@@ -366,7 +378,8 @@ if($q_opself->num_rows == 0){
             $testD = $f_epidem['age_d'];
             $married_code = $f_epidem['marital_status_id'];
             
-            $address = iconv('TIS-620','UTF-8', $f_epidem['address']);
+            // $address = iconv('TIS-620','UTF-8', $f_epidem['address']);
+            $address = $f_epidem['address'];
             $pv_code = $f_epidem['chw_code'];
             $ap_code = $f_epidem['amp_code'];
             $tb_code = $f_epidem['tmb_code'];
@@ -376,7 +389,8 @@ if($q_opself->num_rows == 0){
             $onset_date = $f_epidem['onset_date'];
             $treated_date = $f_epidem['treated_date'];
             $diagnosis_date = $f_epidem['diagnosis_date'];
-            $informer_name = iconv('TIS-620','UTF-8', $f_epidem['informer_name']);
+            // $informer_name = iconv('TIS-620','UTF-8', $f_epidem['informer_name']);
+            $informer_name = $f_epidem['informer_name'];
 
             $epidem_person_status_id = $f_epidem['epidem_person_status_id'];
 

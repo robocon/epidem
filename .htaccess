@@ -1,0 +1,5 @@
+#AddDefaultCharset TIS-620
+#AddCharset TIS-620 .php .html
+
+AddDefaultCharset UTF-8
+AddCharset UTF-8 .php .html
