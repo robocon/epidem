@@ -17,7 +17,6 @@ function dump($txt)
 // single: yes
 $epidem_id = $main['epidem_id'];
 $opsi_id = $main['opsi_id'];
-$an = $main['an'];
 $cid = $main['cid'];
 $hn = $main['hn'];
 $passport_no = $main['passport_no'];
@@ -126,7 +125,7 @@ $sm3_informer_name = $informer_name;
 $send_back_apidem_id = 0;
 if(empty($epidem_id)){
     $sql = "INSERT INTO `epidem` ( 
-        `id`, `opsi_id`,`an`, `cid`, `hn`, `passport_no`, `prefix`, 
+        `id`, `opsi_id`, `cid`, `hn`, `passport_no`, `prefix`, 
         `first_name`, `last_name`, `nationality`, `gender`, `birth_date`, `age_y`, 
         `age_m`, `age_d`, `marital_status_id`, `address`, `moo`, `road`, 
         `chw_code`, `amp_code`, `tmb_code`, `mobile_phone`, `occupation`, `epidem_report_guid`, 
@@ -139,7 +138,7 @@ if(empty($epidem_id)){
         `lab_report_date`, `lab_report_result`, `specimen_date`, `specimen_place_id`, `tests_reason_type_id`, `lab_his_ref_code`, 
         `lab_his_ref_name`, `tmlt_code`, `date_add`, `date_update`, `officer`, `send_data` 
     ) VALUES (
-        NULL, '$opsi_id','$an', '$cid', '$hn', '$passport_no', '$sm3_prefix', 
+        NULL, '$opsi_id', '$cid', '$hn', '$passport_no', '$sm3_prefix', 
         '$sm3_first_name', '$sm3_last_name', '$nationality', '$gender', '$birth_date', '$age_y', 
         '$age_m', '$age_d', '$marital_status_id', '$sm3_address', '$moo', '$road', 
         '$chw_code', '$amp_code', '$tmb_code', '$mobile_phone', '$occupation', '$epidem_report_guid', 
@@ -155,7 +154,7 @@ if(empty($epidem_id)){
     $q = $dbi->query($sql);
     $send_back_apidem_id = $dbi->insert_id;
 }else{
-    $sql = "UPDATE `epidem` SET `opsi_id`='$opsi_id', `an`='$an', `cid`='$cid', `hn`='$hn', `passport_no`='$passport_no', `prefix`='$sm3_prefix', 
+    $sql = "UPDATE `epidem` SET `opsi_id`='$opsi_id', `cid`='$cid', `hn`='$hn', `passport_no`='$passport_no', `prefix`='$sm3_prefix', 
     `first_name`='$sm3_first_name', `last_name`='$sm3_last_name', `nationality`='$nationality', `gender`='$gender', `birth_date`='$birth_date', 
     `age_y`='$age_y', `age_m`='$age_m', `age_d`='$age_d', `marital_status_id`='$marital_status_id', `address`='$sm3_address', 
     `moo`='$moo', `road`='$road', `chw_code`='$chw_code', `amp_code`='$amp_code', `tmb_code`='$tmb_code', 

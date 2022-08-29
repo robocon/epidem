@@ -33,8 +33,9 @@ function guidv4($data = null) {
 //
 // https://epidemcenter.moph.go.th/epidem/api/LookupTable?table_name=epidem_risk_history_type
 
-$date_search = $_POST['date_search'];
-$q_opself = $dbi->query("SELECT * FROM `opselfisolation_detail` WHERE `registerdate` = '$date_search'");
+list($ys, $ms) = explode('-', $_POST['date_search']);
+$date_search = ($ys+543).'-'.$ms;
+$q_opself = $dbi->query("SELECT * FROM `ipcard` WHERE `bedcode` LIKE '46%' AND `date` LIKE '$date_search%' ");
 if($q_opself->num_rows == 0){
     echo "ไม่พบข้อมูล";
     exit;
@@ -94,7 +95,7 @@ if($q_opself->num_rows == 0){
     }
 </style>
 <div>
-    <h3 style="margin:0;">ข้อมูลผู้ป่วยนอก Covid-19 (ข้อมูลเบื้องต้นจากการซักประวัติ Covid-19 กรณี OP SI)</h3> 
+    <h3 style="margin:0;">ข้อมูลผู้ป่วยใน Covid-19</h3> 
 </div>
 
 <script>
@@ -280,7 +281,8 @@ if($q_opself->num_rows == 0){
     while ($a = $q_opself->fetch_assoc()) { 
 
         $idcard = $a['idcard'];
-        $opsi_id = $a['row_id'];
+        $opsi_id = 0;
+        $an = $a['an'];
         $onset_date = $a['symptom_date'];
         $treated_date = $a['consent_date'];
         $diagnosis_date = $a['registerdate'];
@@ -291,7 +293,7 @@ if($q_opself->num_rows == 0){
         $risk_history_type_id = '';
 
         $hn = $a['hn'];
-        $qop = $dbi->query("SELECT `yot`,`name`,`surname`,`passport`,`nation`,`sex`,`dbirth`,`married`,`address`,`tambol`,`ampur`,`changwat`,`phone` 
+        $qop = $dbi->query("SELECT `idcard`,`yot`,`name`,`surname`,`passport`,`nation`,`sex`,`dbirth`,`married`,`address`,`tambol`,`ampur`,`changwat`,`phone` 
         FROM `opcard` 
         WHERE `hn` = '$hn' ");
         $op = $qop->fetch_assoc();
@@ -306,6 +308,10 @@ if($q_opself->num_rows == 0){
         $passport = $op['passport'];
         $op_nation = $op['nation'];
         $phone = $op['phone'];
+
+        if(empty($idcard)){
+            $idcard = $op['idcard'];
+        }
         
 
         // $sex = iconv('TIS-620','UTF-8', $op['sex']);
@@ -355,7 +361,7 @@ if($q_opself->num_rows == 0){
         $curr_date = date('Y-m-d\TH:i:s.v'); // Format YYYY-mm-ddTHH:ii:ss.000
         $bg_color = '';
         $epidem_id = '';
-        $q_epidem = $dbi->query("SELECT * FROM `epidem` WHERE `opsi_id` = '$opsi_id' ");
+        $q_epidem = $dbi->query("SELECT * FROM `epidem` WHERE `an` = '$an' ");
         if($q_epidem->num_rows > 0){ 
             $f_epidem = $q_epidem->fetch_assoc();
             $bg_color = 'style="background-color: #b6ffa8"';
@@ -844,7 +850,7 @@ if($q_opself->num_rows == 0){
                 <input type="hidden" name="<?=$idcard;?>[opsi_id]" id="<?=$idcard;?>[opsi_id]" class="<?=$idcard;?>" value="<?=$opsi_id;?>">
                 <input type="hidden" name="<?=$idcard;?>[hn]" id="<?=$idcard;?>[hn]" class="<?=$idcard;?>" value="<?=$hn;?>">
                 <input type="hidden" name="<?=$idcard;?>[epidem_id]" id="<?=$idcard;?>[epidem_id]" class="<?=$idcard;?>" value="<?=$epidem_id;?>">
-                
+                <input type="hidden" name="<?=$idcard;?>[an]" id="<?=$idcard;?>[an]" class="<?=$idcard;?>" value="<?=$an;?>">
             </td>
         </tr>
         <?php
