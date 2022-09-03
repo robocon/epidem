@@ -1,5 +1,29 @@
 <?php 
 session_start();
+include 'config.php';
+$dbi = new mysqli(HOST,USER,PASS,DB);
+$dbi->query("SET NAMES UTF8");
+
+if(empty($_SESSION['sIdname'])){
+
+    ini_set('session.gc_maxlifetime', 60*60*24);
+    $idname = $dbi->real_escape_string($_GET['idname']);
+    $sql = "SELECT * FROM `inputm` WHERE `idname` = '$idname' AND `status` = 'y'";
+    $q = $dbi->query($sql);
+    if($q->num_rows > 0){ 
+        $item = $q->fetch_assoc();
+        $_SESSION['sIdname'] = $item['idname'];
+        $_SESSION['sPword'] = $item['pword'];
+        $_SESSION['smenucode'] = $item['menucode'];
+        $_SESSION['sOfficer'] = $item['name'];
+        $_SESSION['sRowid'] = $item['row_id'];
+        $_SESSION['sLevel'] = $item['level'];
+    }else{
+        echo 'ไม่พบผู้ใช้งาน <a href="http://192.168.131.250/sm3/surasak3/login_page.php">กรุณาล็อคอินอีกครั้ง</a>';
+        exit;
+    }
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -23,7 +47,7 @@ session_start();
     }
     </style>
     <div>
-        <a href="epidem.php">EPIDEM ผู้ป่วยนอก</a> | <a href="epidem_ip.php">EPIDEM ผู้ป่วยใน</a>
+        <a href="epidem.php">ฟอร์ม EPIDEM ผู้ป่วยนอก</a> | <a href="epidem_ip.php">ฟอร์ม EPIDEM ผู้ป่วยใน</a>
     </div>
     <h3>ระบบส่งข้อมูลผู้มารับบริการ Covid-19 ผู้ป่วยนอก ผ่าน EPIDEM</h3>
     <form action="epidem_form.php" method="post" id="epidem_form">

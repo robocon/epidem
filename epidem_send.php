@@ -106,9 +106,10 @@ $tests_reason_type_id = $main['tests_reason_type_id'];
 $lab_his_ref_code = '';
 $lab_his_ref_name = '';
 $tmlt_code = '';
-$date_add = $main['date_add'];
-$date_update = $main['date_update'];
-$officer = $main['officer'];
+
+$date_add = $date_update = date('Y-m-d H:i:s');
+$officer = $_SESSION['sOfficer'];
+
 $send_data = $main['send_data'];
 
 
@@ -168,7 +169,7 @@ if(empty($epidem_id)){
     `location_gis_latitude`='$location_gis_latitude', `location_gis_longitude`='$location_gis_longitude', `isolate_chw_code`='$isolate_chw_code', `isolate_place_id`='$isolate_place_id', `patient_type`='$patient_type', 
     `epidem_covid_cluster_type_id`='$epidem_covid_cluster_type_id', `cluster_latitude`='$cluster_latitude', `cluster_longitude`='$cluster_longitude', `epidem_lab_confirm_type_id`='$epidem_lab_confirm_type_id', `lab_report_date`='$lab_report_date', 
     `lab_report_result`='$lab_report_result', `specimen_date`='$specimen_date', `specimen_place_id`='$specimen_place_id', `tests_reason_type_id`='$tests_reason_type_id', `lab_his_ref_code`='$lab_his_ref_code', 
-    `lab_his_ref_name`='$lab_his_ref_name', `tmlt_code`='$tmlt_code', `date_add`='$date_add', `date_update`='$date_update', `officer`='$officer', 
+    `lab_his_ref_name`='$lab_his_ref_name', `tmlt_code`='$tmlt_code', `date_update`='$date_update', `officer`='$officer', 
     `send_data`='$send_data' 
     WHERE `id`= '$epidem_id';";
     $q = $dbi->query($sql);

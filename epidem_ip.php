@@ -23,7 +23,7 @@ session_start();
     }
     </style>
     <div>
-        <a href="epidem.php">EPIDEM ผู้ป่วยนอก</a> | <a href="epidem_ip.php">EPIDEM ผู้ป่วยใน</a>
+        <a href="epidem.php">ฟอร์ม EPIDEM ผู้ป่วยนอก</a> | <a href="epidem_ip.php">ฟอร์ม EPIDEM ผู้ป่วยใน</a>
     </div>
     <h3>ระบบส่งข้อมูลผู้มารับบริการ Covid-19 ผู้ป่วยใน ผ่าน EPIDEM</h3>
     <form action="epidem_ip_form.php" method="post" id="epidem_form">
@@ -31,7 +31,7 @@ session_start();
             <?php 
             $date_search = date('Y-m');
             ?>
-            <b>เลือกวันที่ : </b><input type="text" name="date_search" id="date_search" value="<?=$date_search;?>"> 
+            <b>เลือกเดือน : </b><input type="text" name="date_search" id="date_search" value="<?=$date_search;?>"> 
             <br>
             <span>ตัวอย่างรูปแบบ ปี(ค.ศ.)-เดือน-วัน เช่น 2022-07-25</span>
         </div>

@@ -95,7 +95,11 @@ if($q_opself->num_rows == 0){
     }
 </style>
 <div>
-    <h3 style="margin:0;">ข้อมูลผู้ป่วยใน Covid-19</h3> 
+    <?php 
+    list($y,$m) = explode('-', $date_search);
+    $full_thai_date = 'เดือน'.$def_fullm_th[$m].' '.$y;
+    ?>
+    <p style="margin: 0;">&lt;&lt;&nbsp;<a href="epidem_ip.php">ย้อนกลับ</a> | <b>ข้อมูลผู้ป่วยใน Covid-19 <u style="background-color: #F6C6C7;"><?=$full_thai_date;?></u></b></p>
 </div>
 
 <script>

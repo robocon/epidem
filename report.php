@@ -1,45 +1,10 @@
 <?php 
 session_start();
 include 'config.php';
+
 $dbi = new mysqli(HOST,USER,PASS,DB);
 $dbi->query("SET NAMES UTF8");
 
-function dump($txt)
-{
-    echo "<pre>";
-    var_dump($txt);
-    echo "</pre>";
-}
-
-function guidv4($data = null) {
-    // Generate 16 bytes (128 bits) of random data or use the data passed into the function.
-    $data = $data ?? random_bytes(16);
-    assert(strlen($data) == 16);
-
-    // Set version to 0100
-    $data[6] = chr(ord($data[6]) & 0x0f | 0x40);
-    // Set bits 6-7 to 10
-    $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
-
-    // Output the 36 character UUID.
-    return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
-}
-
-// $password_hash = strtoupper(hash_hmac('sha256', MOPH_USER, SECRET_KEY));
-// dump($password_hash);
-
-// 
-// https://cvp1.moph.go.th/token?Action=get_moph_access_token&user=Surasak11512&password_hash=8072F6286DDDE4AF49085F680E4016AAFA0435DFD48EDA1C5FC6E1ACE5F5A6BD&hospital_code=11512
-
-//
-// https://epidemcenter.moph.go.th/epidem/api/LookupTable?table_name=epidem_risk_history_type
-
-$date_search = $_POST['date_search'];
-$q_opself = $dbi->query("SELECT * FROM `opselfisolation_detail` WHERE `registerdate` = '$date_search'");
-if($q_opself->num_rows == 0){
-    echo "ไม่พบข้อมูล";
-    exit;
-}
 
 ?>
 <style>
@@ -94,28 +59,14 @@ if($q_opself->num_rows == 0){
         font-weight: bold;
     }
 </style>
-<div>
-    <?php 
-    list($y,$m,$d) = explode('-', $date_search);
-    $full_thai_date = 'วันที่'.$d.' '.$def_fullm_th[$m].' '.$y;
-    ?>
-    <p style="margin: 0;">&lt;&lt;&nbsp;<a href="epidem.php">ย้อนกลับ</a> | <b>ข้อมูลผู้ป่วยนอก Covid-19 (ข้อมูลเบื้องต้นจากการซักประวัติ Covid-19 กรณี OP SI) <u style="background-color: #8BD2EC;"><?=$full_thai_date;?></u></b></p>
-</div>
 
-<script>
-    var all_users = [];
-</script>
-
-<div id="epidem_form_container">
-
-<form action="epidem_send.php" method="post" id="epidem_form">
+<h3 style="margin:0;">รายงานการส่งข้อมูล EPIDEM</h3>
 <div style="height:90%;overflow-y:scroll;">
 <table class="chk_table">
     <tr>
         <th colspan="20">ข้อมูลทั่วไปของผู้ติดเชื้อ</th>
         <th colspan="36">ข้อมูลรายละเอียดของการรายงานโรค</th>
         <th colspan="9">ข้อมูลการตรวจ LAB</th>
-        <th rowspan="3">ส่งข้อมูลรายคน</th>
     </tr>
     <tr>
         <!-- ข้อมูลทั่วไปของผู้ติดเชื้อ -->
@@ -282,312 +233,134 @@ if($q_opself->num_rows == 0){
         <th>รหัส TMLT</th>
     </tr>
     <?php 
-    while ($a = $q_opself->fetch_assoc()) { 
-
-        $idcard = $a['idcard'];
-        $opsi_id = $a['row_id'];
-        $onset_date = $a['symptom_date'];
-        $treated_date = $a['consent_date'];
-        $diagnosis_date = $a['registerdate'];
-        $informer_name = iconv('TIS-620', 'UTF-8', $a['officer']);
-        $epidem_person_status_id = '';
-        $tests_reason_type_id = '';
-        $isolate_place_id = '';
-        $risk_history_type_id = '';
-
-        $hn = $a['hn'];
-        $qop = $dbi->query("SELECT `yot`,`name`,`surname`,`passport`,`nation`,`sex`,`dbirth`,`married`,`address`,`tambol`,`ampur`,`changwat`,`phone` 
-        FROM `opcard` 
-        WHERE `hn` = '$hn' ");
-        $op = $qop->fetch_assoc();
-
-        // $yot = iconv('TIS-620','UTF-8', $op['yot']);
-        // $name = iconv('TIS-620','UTF-8', $op['name']);
-        // $surname = iconv('TIS-620','UTF-8', $op['surname']);
-        $yot = $op['yot'];
-        $name = $op['name'];
-        $surname = $op['surname'];
-
-        $passport = $op['passport'];
-        $op_nation = $op['nation'];
-        $phone = $op['phone'];
-        
-
-        // $sex = iconv('TIS-620','UTF-8', $op['sex']);
-        $sex = $op['sex'];
-
-        $sex = ($sex=='ช') ? '1': '2';
-
-        $thYear = substr($op['dbirth'],0,4);
-        $dbirth = ($thYear-543).substr($op['dbirth'],4);
-        
-        $birthday = new DateTime($dbirth);
-        $diff = $birthday->diff(new DateTime());
-        $testY = $diff->format('%y');
-        $testM = $diff->format('%m');
-        $testD = $diff->format('%d');
-
-        // $married = iconv('TIS-620','UTF-8', $op['married']);
-        $married = $op['married'];
-
-        // (1=โสด, 2=คู่, 3=หย่าร้าง, 4=หม้าย)
-        $married_code = '1';
-        if($married=='สมรส'){ $married_code = 2; }
-        elseif ($married=='หย่าร้าง') { $married_code = 3; }
-        elseif ($married=='หม้าย') { $married_code = 4; }
-
-        // $address = iconv('TIS-620','UTF-8', $op['address']);
-        $address = $op['address'];
-        $changwat = $op['changwat'];
-        $tambon = $op['tambol'];
-
-        $qtb = $dbi->query("SELECT `lgo_code` FROM `tambon` WHERE `province` = '$changwat' AND `lgo_name` = '$tambon'");
-        if($qtb->num_rows > 0){
-            $tb = $qtb->fetch_assoc();
-            $pv_code = substr($tb['lgo_code'],0,2);
-            $ap_code = substr($tb['lgo_code'],2,2);
-            $tb_code = substr($tb['lgo_code'],4,2);
-        }else{
-            $tb_code = iconv('TIS-620','UTF-8', $op['tambol']);
-            $ap_code = iconv('TIS-620','UTF-8', $op['ampur']);
-            $pv_code = iconv('TIS-620','UTF-8', $op['changwat']);
-        }
-        
-        $qna = $dbi->query("SELECT `code` FROM `nation` WHERE `detail` = '$op_nation' ");
-        $na_item = $qna->fetch_assoc();
-        $na_code = $na_item['code'];
-
-        $curr_date = date('Y-m-d\TH:i:s.v'); // Format YYYY-mm-ddTHH:ii:ss.000
-        $bg_color = '';
-        $epidem_id = '';
-        $q_epidem = $dbi->query("SELECT * FROM `epidem` WHERE `opsi_id` = '$opsi_id' ");
-        if($q_epidem->num_rows > 0){ 
-            $f_epidem = $q_epidem->fetch_assoc();
-            $bg_color = 'style="background-color: #b6ffa8"';
-            $epidem_id = $f_epidem['id'];
-            $uuid = strtoupper($f_epidem['epidem_report_guid']);
-
-            // $yot = iconv('TIS-620','UTF-8', $f_epidem['prefix']);
-            // $name = iconv('TIS-620','UTF-8', $f_epidem['first_name']);
-            // $surname = iconv('TIS-620','UTF-8', $f_epidem['last_name']);
-            $yot = $f_epidem['prefix'];
-            $name = $f_epidem['first_name'];
-            $surname = $f_epidem['last_name'];
-
-            $passport = $f_epidem['passport'];
-            $na_code = $f_epidem['nationality'];
-            $sex = $f_epidem['gender'];
-            $dbirth = $f_epidem['birth_date'];
-            $testY = $f_epidem['age_y'];
-            $testM = $f_epidem['age_m'];
-            $testD = $f_epidem['age_d'];
-            $married_code = $f_epidem['marital_status_id'];
-            
-            // $address = iconv('TIS-620','UTF-8', $f_epidem['address']);
-            $address = $f_epidem['address'];
-            $pv_code = $f_epidem['chw_code'];
-            $ap_code = $f_epidem['amp_code'];
-            $tb_code = $f_epidem['tmb_code'];
-            $phone = $f_epidem['mobile_phone'];
-
-            $curr_date = $f_epidem['report_datetime'];
-            $onset_date = $f_epidem['onset_date'];
-            $treated_date = $f_epidem['treated_date'];
-            $diagnosis_date = $f_epidem['diagnosis_date'];
-            // $informer_name = iconv('TIS-620','UTF-8', $f_epidem['informer_name']);
-            $informer_name = $f_epidem['informer_name'];
-
-            $epidem_person_status_id = $f_epidem['epidem_person_status_id'];
-
-            $epidem_symptom_type_id = $f_epidem['epidem_symptom_type_id'];
-            $pregnant_status = $f_epidem['pregnant_status'];
-            $respirator_status = $f_epidem['respirator_status'];
-
-            $exposure_epidemic_area_status = $f_epidem['exposure_epidemic_area_status'];
-            $exposure_healthcare_worker_status = $f_epidem['exposure_healthcare_worker_status'];
-            $exposure_closed_contact_status = $f_epidem['exposure_closed_contact_status'];
-            $exposure_occupation_status = $f_epidem['exposure_occupation_status'];
-            $exposure_travel_status = $f_epidem['exposure_travel_status'];
-
-            $risk_history_type_id = $f_epidem['risk_history_type_id'];
-            $isolate_place_id = $f_epidem['isolate_place_id'];
-            $tests_reason_type_id = $f_epidem['tests_reason_type_id'];
-
-        }else{
-            $uuid = strtoupper(guidv4());
-        }
-
-        if($idcard=='1570400005381'){
-            $uuid = 'AEA01163-5FEB-454F-9E4B-2F85A5204094';
-        }
-
+    $sql = "SELECT * FROM `epidem` ORDER BY `id` DESC LIMIT 50";
+    $q = $dbi->query($sql);
+    while ($a = $q->fetch_assoc()) { 
         ?>
-        <tr id="<?=$idcard;?>[row]" <?=$bg_color;?>>
+        <tr>
             <!-- ข้อมูลทั่วไปของผู้ติดเชื้อ -->
             <td>
                 <!-- cid -->
-                <?=$idcard;?>
-                <input type="hidden" name="<?=$idcard;?>[cid]" id="<?=$idcard;?>[cid]" class="<?=$idcard;?>" value="<?=$idcard;?>">
-                <script>
-                    all_users.push("<?=$idcard;?>");
-                </script>
+                <?=$a['cid'];?>
             </td>
             <td>
                 <!-- prefix -->
-                <?=$yot;?>
-                <input type="hidden" name="<?=$idcard;?>[prefix]" id="<?=$idcard;?>[prefix]" class="<?=$idcard;?>" value="<?=$yot;?>">
+                <?=$a['prefix'];?>
             </td>
             <td>
                 <!-- first_name -->
-                <?=$name;?>
-                <input type="hidden" name="<?=$idcard;?>[first_name]" id="<?=$idcard;?>[first_name]" class="<?=$idcard;?>" value="<?=$name;?>">
+                <?=$a['first_name'];?>
             </td>
             <td>
                 <!-- last_name -->
-                <?=$surname;?>
-                <input type="hidden" name="<?=$idcard;?>[last_name]" id="<?=$idcard;?>[last_name]" class="<?=$idcard;?>" value="<?=$surname;?>">
+                <?=$a['last_name'];?>
             </td>
             <td>
                 <!-- passport_no -->
-                <?=$passport;?>
-                <input type="hidden" name="<?=$idcard;?>[passport_no]" id="<?=$idcard;?>[passport_no]" class="<?=$idcard;?>" value="<?=$passport;?>">
+                <?=$a['passport_no'];?>
             </td>
 
             <td>
                 <!-- nationality -->
-                <?=$na_code;?>
-                <input type="hidden" name="<?=$idcard;?>[nationality]" id="<?=$idcard;?>[nationality]" class="<?=$idcard;?>" value="<?=$na_code;?>">
+                <?=$a['nationality'];?>
             </td>
             <td>
                 <!-- gender -->
-                <?=$sex;?>
-                <input type="hidden" name="<?=$idcard;?>[gender]" id="<?=$idcard;?>[gender]" class="<?=$idcard;?>" value="<?=$sex;?>">
+                <?=$a['gender'];?>
             </td>
             <td>
                 <!-- birth_date -->
-                <?=$dbirth;?>
-                <input type="hidden" name="<?=$idcard;?>[birth_date]" id="<?=$idcard;?>[birth_date]" class="<?=$idcard;?>" value="<?=$dbirth;?>">
+                <?=$a['birth_date'];?>
             </td>
             <td>
                 <!-- age_y -->
-                <?=$testY;?>
-                <input type="hidden" name="<?=$idcard;?>[age_y]" id="<?=$idcard;?>[age_y]" class="<?=$idcard;?>" value="<?=$testY;?>">
+                <?=$a['age_y'];?>
             </td>
             <td>
                 <!-- age_m -->
-                <?=$testM;?>
-                <input type="hidden" name="<?=$idcard;?>[age_m]" id="<?=$idcard;?>[age_m]" class="<?=$idcard;?>" value="<?=$testM;?>">
-            </td>
-
-            <td>
-                <?=$testD;?>
-                <input type="hidden" name="<?=$idcard;?>[age_d]" id="<?=$idcard;?>[age_d]" class="<?=$idcard;?>" value="<?=$testD;?>">
+                <?=$a['age_m'];?>
             </td>
             <td>
-                <?=$married_code;?>
-                <input type="hidden" name="<?=$idcard;?>[marital_status_id]" id="<?=$idcard;?>[marital_status_id]" class="<?=$idcard;?>" value="<?=$married_code;?>">
+                <?=$a['age_d'];?>
             </td>
             <td>
-                <?=$address;?>
-                <input type="hidden" name="<?=$idcard;?>[address]" id="<?=$idcard;?>[address]" class="<?=$idcard;?>" value="<?=$address;?>">
+                <?=$a['marital_status_id'];?>
+            </td>
+            <td>
+                <?=$a['address'];?>
             </td>
             <td><!-- moo --></td>
             <td><!-- road --></td>
-
             <td>
-                <?=$pv_code;?>
-                <input type="hidden" name="<?=$idcard;?>[chw_code]" id="<?=$idcard;?>[chw_code]" class="<?=$idcard;?>" value="<?=$pv_code;?>">
+                <?=$a['chw_code'];?>
             </td>
             <td>
-                <?=$ap_code;?>
-                <input type="hidden" name="<?=$idcard;?>[amp_code]" id="<?=$idcard;?>[amp_code]" class="<?=$idcard;?>" value="<?=$ap_code;?>">
+                <?=$a['amp_code'];?>
             </td>
             <td>
-                <?=$tb_code;?>
-                <input type="hidden" name="<?=$idcard;?>[tmb_code]" id="<?=$idcard;?>[tmb_code]" class="<?=$idcard;?>" value="<?=$tb_code;?>">
+                <?=$a['tmb_code'];?>
             </td>
             <td>
-                <?=$phone;?>
-                <input type="hidden" name="<?=$idcard;?>[mobile_phone]" id="<?=$idcard;?>[mobile_phone]" class="<?=$idcard;?>" value="<?=$phone;?>">
+                <?=$a['mobile_phone'];?>
             </td>
             <td></td><!-- occupation -->
 
             <!-- ข้อมูลรายละเอียดของการรายงานโรค -->
             <td>
                 <!-- epidem_report_guid -->
-                <?php 
-                echo $uuid;
-                ?>
-                <input type="hidden" name="<?=$idcard;?>[epidem_report_guid]" id="<?=$idcard;?>[epidem_report_guid]" class="<?=$idcard;?>" value="<?=$uuid;?>">
+                <?=$a['epidem_report_guid'];?>
             </td>
             <td>
                 <!-- epidem_report_group_id -->
-                92
-                <input type="hidden" name="<?=$idcard;?>[epidem_report_group_id]" id="<?=$idcard;?>[epidem_report_group_id]" class="<?=$idcard;?>" value="92">
+                <?=$a['epidem_report_group_id'];?>
             </td>
             <td>
                 <!-- treated_hospital_code -->
-                11512
-                <input type="hidden" name="<?=$idcard;?>[treated_hospital_code]" id="<?=$idcard;?>[treated_hospital_code]" class="<?=$idcard;?>" value="11512">
+                <?=$a['treated_hospital_code'];?>
             </td>
             <td>
                 <!-- report_datetime -->
                 <?php
-                
-                echo $curr_date;
+                echo $a['report_datetime'];
                 ?>
-                <input type="hidden" name="<?=$idcard;?>[report_datetime]" id="<?=$idcard;?>[report_datetime]" class="<?=$idcard;?>" value="<?=$curr_date;?>">
             </td>
             <td>
                 <!-- onset_date -->
                 <?php 
-                echo $onset_date;
+                echo $a['onset_date'];
                 ?>
-                <input type="hidden" name="<?=$idcard;?>[onset_date]" id="<?=$idcard;?>[onset_date]" class="<?=$idcard;?>" value="<?=$onset_date;?>">
             </td>
 
             <td>
                 <!-- treated_date -->
                 <?php 
-                echo $treated_date;
+                echo $a['treated_date'];
                 ?>
-                <input type="hidden" name="<?=$idcard;?>[treated_date]" id="<?=$idcard;?>[treated_date]" class="<?=$idcard;?>" value="<?=$treated_date;?>">
             </td>
             <td>
                 <!-- diagnosis_date -->
                 <?php 
-                echo $diagnosis_date;
+                echo $a['diagnosis_date'];
                 ?>
-                <input type="hidden" name="<?=$idcard;?>[diagnosis_date]" id="<?=$idcard;?>[diagnosis_date]" class="<?=$idcard;?>" value="<?=$diagnosis_date;?>">
             </td>
             <td>
                 <?php 
-                echo $informer_name;
+                echo $a['informer_name'];
                 ?>
-                <input type="hidden" name="<?=$idcard;?>[informer_name]" id="<?=$idcard;?>[informer_name]" class="<?=$idcard;?>" value="<?=$informer_name;?>">
             </td>
             <td>
                 <!-- principal_diagnosis_icd10 -->
-                B342
-                <input type="hidden" name="<?=$idcard;?>[principal_diagnosis_icd10]" id="<?=$idcard;?>[principal_diagnosis_icd10]" class="<?=$idcard;?>" value="B342">
+                <?=$a['principal_diagnosis_icd10'];?>
             </td>
             <td>
                 <!-- diagnosis_icd10_list -->
-                B342
-                <input type="hidden" name="<?=$idcard;?>[diagnosis_icd10_list]" id="<?=$idcard;?>[diagnosis_icd10_list]" class="<?=$idcard;?>" value="B342">
+                <?=$a['diagnosis_icd10_list'];?>
             </td>
             <td>
                 <?php 
                 $p_status = array(1 => 'กำลังรักษา' , 2 => 'หายจากโรคแล้ว' , 3 => 'เสียชีวิต', 4 => 'ไม่ทราบ');
+                echo $p_status[$a['epidem_person_status_id']];
                 ?>
-                <select name="<?=$idcard;?>[epidem_person_status_id]" id="<?=$idcard;?>[epidem_person_status_id]" class="<?=$idcard;?>" >
-                    <?php 
-                    foreach ($p_status as $key => $s) { 
-                        $selected = ($epidem_person_status_id == $key) ? 'selected="selected"' : '';
-                        ?><option value="<?=$key;?>" <?=$selected;?> ><?=$s;?></option><?php
-                    }
-                    ?>
-                </select>
             </td>
             <td>
                 <?php 
@@ -844,223 +617,9 @@ if($q_opself->num_rows == 0){
             <td><!-- lab_his_ref_code --></td>
             <td><!-- lab_his_ref_name --></td>
             <td><!-- tmlt_code --></td>
-            <td>
-                <button onclick="send_api('<?=$idcard;?>')" type="button">ส่งข้อมูลรายคน</button>
-                <input type="hidden" name="<?=$idcard;?>[opsi_id]" id="<?=$idcard;?>[opsi_id]" class="<?=$idcard;?>" value="<?=$opsi_id;?>">
-                <input type="hidden" name="<?=$idcard;?>[hn]" id="<?=$idcard;?>[hn]" class="<?=$idcard;?>" value="<?=$hn;?>">
-                <input type="hidden" name="<?=$idcard;?>[epidem_id]" id="<?=$idcard;?>[epidem_id]" class="<?=$idcard;?>" value="<?=$epidem_id;?>">
-                
-            </td>
         </tr>
         <?php
     }
     ?>
-</table>
+
 </div>
-<div>
-    <button type="button" onclick="send_all_users();">ส่งข้อมูลทั้งหมด</button> | <a href="https://ddc.moph.go.th/viralpneumonia/file/g_surveillance/g_api_epidem_0165.pdf" target="_blank">รายละเอียดโครงสร้างข้อมูล</a> | <a href="https://epidemcenter.moph.go.th/dashboard">EPIDEM DASHBOARD</a>
-</div>
-</form>
-
-<!-- End form container -->
-</div>
-
-<div id="noti-alert" style="display:none;">
-    <div id="noti-btn">[ ปิด ]</div>
-    <div id="noti-content"> some wording alert </div>
-</div>
-
-<script> 
-    function newXmlHttp(){
-        var xmlhttp = false;
-
-        try{
-            xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
-        }catch(e){
-            try{
-                xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-            }catch(e){
-                xmlhttp = false;
-            }
-        }
-
-        if(!xmlhttp && document.createElement){
-            xmlhttp = new XMLHttpRequest();
-        }
-        return xmlhttp;
-    }
-    
-    function send_all_users(){
-        
-        var resTxt = '';
-
-        for (let index = 0; index < all_users.length; index++) {
-            const element = all_users[index];
-            var reses = validate_form(element);
-
-            if(reses.length >= 2){
-                resTxt += reses[0]+"\n";
-            }
-        }
-
-        if(resTxt!=""){
-            alert(resTxt+"\nข้อมูลไม่ครบถ้วน กรุณาตรวจสอบข้อมูลอีกครั้ง");
-        }else{
-            document.getElementById("epidem_form").submit();
-        }
-
-    }
-
-    function send_api(idcard){
-
-        var reses = validate_form(idcard);
-        if(reses.length >= 2){
-
-            var resTxt = '';
-            for (let index = 0; index < reses.length; index++) {
-                const element = reses[index];
-                if(index==0){
-                    resTxt += element+" ขาดข้อมูล\n";
-                }else{
-                    resTxt += "- "+element+"\n";
-                }
-            }
-            resTxt += "กรุณากรอกข้อมูลให้ครบถ้วน";
-            alert(resTxt);
-            
-        }else{
-
-            var test_str = [];
-            var items = document.getElementsByClassName(idcard);
-            for (let index = 0; index < items.length; index++) {
-                const element = items[index];
-                test_str.push(encodeURIComponent(element.id)+"="+encodeURIComponent(element.value));
-            }
-            test_str.push(encodeURIComponent("single")+"="+encodeURIComponent("yes"));
-            test_str.push(encodeURIComponent("idcard")+"="+encodeURIComponent(idcard));
-            var data = test_str.join("&");
-
-            var req = newXmlHttp();
-            req.open('POST', 'epidem_send.php', true);
-            req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-            req.onreadystatechange = function() {
-                if (this.readyState === 4) {
-                    if (this.status >= 200 && this.status < 400) { 
-                        var data = JSON.parse(this.response);
-                        if(data.MessageCode==200){ 
-
-                            document.getElementById(idcard+"[row]").setAttribute("style","background-color: #b6ffa8");
-                            document.getElementById(idcard+"[epidem_id]").value = data.apidem_id;
-                            document.getElementById('noti-content').innerHTML = "บันทึกข้อมูลเรียบร้อย";
-                            document.getElementById('noti-alert').style.display = '';
-
-                        }else if(data.MessageCode==500){
-                            document.getElementById('noti-content').innerHTML = data.Message;
-                            document.getElementById('noti-alert').style.display = '';
-                        }
-                    } else {
-                        // Error :(
-                        
-                    }
-                }
-            };
-            req.send(data);
-
-
-        }
-        
-    }
-
-    function validate_form(idcard){
-
-        /*
-        document.getElementById(idcard+"[cid]").value;
-        document.getElementById(idcard+"[prefix]").value;
-        document.getElementById(idcard+"[first_name]").value;
-        document.getElementById(idcard+"[last_name]").value;
-        document.getElementById(idcard+"[gender]").value;
-        document.getElementById(idcard+"[birth_date]").value;
-        document.getElementById(idcard+"[age_y]").value;
-        document.getElementById(idcard+"[age_m]").value;
-        document.getElementById(idcard+"[age_d]").value;
-        document.getElementById(idcard+"[address]").value;
-        */
-        var val_alert = [];
-        var val_test = false;
-
-        var chw_code = parseInt(document.getElementById(idcard+"[chw_code]").value.trim());
-        if(isNaN(chw_code)){
-            val_alert.push("ข้อมูลไม่ถูกต้อง กรุณาตรวจสอบข้อมูล จังหวัด อำเภอ ตำบล อีกครั้ง")
-        }
-        
-
-        // document.getElementById(idcard+"[amp_code]").value;
-        // document.getElementById(idcard+"[tmb_code]").value;
-
-        // ฟิกเอาไว้
-        // document.getElementById(idcard+"[epidem_report_group_id]").value;
-        // document.getElementById(idcard+"[treated_hospital_code]").value;
-        // document.getElementById(idcard+"[report_datetime]").value;
-        // document.getElementById(idcard+"[principal_diagnosis_icd10]").value;
-        // document.getElementById(idcard+"[diagnosis_icd10_list]").value;
-
-        var respirator_status = document.getElementById(idcard+"[respirator_status]").value.trim();
-        if(respirator_status==""){ 
-            // alert("กรุณาเลือกข้อมูล respirator_status(ใส่เครื่องช่วยหายใจ)");
-            // return;
-            val_alert.push("respirator_status(ใส่เครื่องช่วยหายใจ)");
-        }
-        
-        // document.getElementById(idcard+"[vaccinated_status]").value;
-
-        var healt_worker = document.getElementById(idcard+"[exposure_healthcare_worker_status]").value;
-        if(healt_worker==""){ 
-            // alert("กรุณาเลือกข้อมูล exposure_healthcare_worker_status(เป็นบุคลากรทางการแพทย์ ที่เกี่ยวข้องกับการรักษา)");
-            // return;
-            val_alert.push("exposure_healthcare_worker_status(เป็นบุคลากรทางการแพทย์ ที่เกี่ยวข้องกับการรักษา)");
-        }
-
-        var risk_history = document.getElementById(idcard+"[risk_history_type_id]").value;
-        if(risk_history==""){ 
-            // alert("กรุณาเลือกข้อมูล risk_history_type_id(ประวัติเสี่ยง 14 วัน)");
-            // return;
-            val_alert.push("risk_history_type_id(ประวัติเสี่ยง 14 วัน)");
-        }
-
-        // document.getElementById(idcard+"[epidem_chw_code]").value;
-        // document.getElementById(idcard+"[isolate_chw_code]").value;
-
-        var isolate_place = document.getElementById(idcard+"[isolate_place_id]").value;
-        if(isolate_place==""){ 
-            // alert("กรุณาเลือกข้อมูล isolate_place_id(สถานที่ isolate)");
-            // return;
-            val_alert.push("isolate_place_id(สถานที่ isolate)");
-        }
-
-        // document.getElementById(idcard+"[epidem_lab_confirm_type_id]").value;
-        var reason_type = document.getElementById(idcard+"[tests_reason_type_id]").value;
-        if(reason_type==""){ 
-            // alert("กรุณาเลือกข้อมูล tests_reason_type_id(เหตุผลการตรวจ)");
-            // return;
-            val_alert.push("tests_reason_type_id(เหตุผลการตรวจ)");
-        }
-
-        var res_alert = [];
-        if(val_alert.length > 0){
-            // res_alert.push(idcard);
-            // console.log(res_alert.concat(val_alert));
-            var res_alert = [idcard].concat(val_alert);
-            // [idcard].concat(val_alert);
-
-        }
-        
-        return res_alert;
-
-
-    }
-
-    document.getElementById('noti-btn').onclick = function(){
-        document.getElementById('noti-alert').style.display = 'none';
-    }
-
-</script>
