@@ -357,6 +357,13 @@ if($q_opself->num_rows == 0){
             $ap_code = iconv('TIS-620','UTF-8', $op['ampur']);
             $pv_code = iconv('TIS-620','UTF-8', $op['changwat']);
         }
+
+        $vaccinated_status = 'N';
+        if(!empty($a['patient_vaccine'])){
+            $vaccinated_status = 'Y';
+        }
+
+        $epidem_symptom_type_id = '';
         
         $qna = $dbi->query("SELECT `code` FROM `nation` WHERE `detail` = '$op_nation' ");
         $na_item = $qna->fetch_assoc();
@@ -407,6 +414,7 @@ if($q_opself->num_rows == 0){
             $epidem_symptom_type_id = $f_epidem['epidem_symptom_type_id'];
             $pregnant_status = $f_epidem['pregnant_status'];
             $respirator_status = $f_epidem['respirator_status'];
+            $vaccinated_status = $f_epidem['vaccinated_status'];
 
             $exposure_epidemic_area_status = $f_epidem['exposure_epidemic_area_status'];
             $exposure_healthcare_worker_status = $f_epidem['exposure_healthcare_worker_status'];
@@ -599,14 +607,13 @@ if($q_opself->num_rows == 0){
                 $symp_list = array(1 => 'ไม่มีอาการ ' , 2 => 'มีอาการที่ ไม่เกี่ยวข้องกับระบบทางเดินหายใจ' , 3 => 'มีอาการที่เกี่ยวกับระบบทาง เดินหายใจ เช่น ปอดบวม');
                 ?>
                 <select name="<?=$idcard;?>[epidem_symptom_type_id]" id="<?=$idcard;?>[epidem_symptom_type_id]" class="<?=$idcard;?>" >
+                    <option value="">เลือกข้อมูล</option>
                     <?php 
-                    foreach ($symp_list as $key => $s) { 
+                    foreach ($symp_list as $symptom_type_key => $s) { 
 
-                        $checked = $epidem_symptom_type_id==$key ? 'checked="checked"' : '';
-                        // if($a['typerisk2']=='โรคระบบทางเดินหายใจ' && $key == 3){
-                        //     $checked = 'checked="checked"';
-                        // }
-                        ?><option value="<?=$key;?>" <?=$checked;?> ><?=$s;?></option><?php
+                        $selected = $epidem_symptom_type_id==$symptom_type_key ? 'selected="selected"' : '';
+
+                        ?><option value="<?=$symptom_type_key;?>" <?=$selected;?> ><?=$s;?></option><?php
                     }
                     ?>
                 </select>
@@ -643,13 +650,16 @@ if($q_opself->num_rows == 0){
             <td>
             <!-- vaccinated_status -->
                 <?php 
-                $vacc_stat = 'N';
-                if(!empty($a['patient_vaccine'])){
-                    $vacc_stat = 'Y';
-                }
-                echo $vacc_stat;
+                $vacc_stat_lists = array('Y' => 'Y', 'N' => 'N');
                 ?>
-                <input type="hidden" name="<?=$idcard;?>[vaccinated_status]" id="<?=$idcard;?>[vaccinated_status]" class="<?=$idcard;?>" value="<?=$vacc_stat;?>">
+                <select name="<?=$idcard;?>[vaccinated_status]" id="<?=$idcard;?>[vaccinated_status]" class="<?=$idcard;?>" >
+                    <?php 
+                    foreach ($vacc_stat_lists as $key => $s) { 
+                        $selected = ($vaccinated_status==$key) ? 'selected="selected"' : '';
+                        ?><option value="<?=$key;?>" <?=$selected;?> ><?=$s;?></option><?php
+                    }
+                    ?>
+                </select>
             </td>
             <td>
             <!-- exposure_epidemic_area_status -->
@@ -795,8 +805,8 @@ if($q_opself->num_rows == 0){
             </td>
             <td>
                 <!-- patient_type -->
-                OPD
-                <input type="hidden" name="<?=$idcard;?>[patient_type]" id="<?=$idcard;?>[patient_type]" class="<?=$idcard;?>" value="OPD">
+                IPD
+                <input type="hidden" name="<?=$idcard;?>[patient_type]" id="<?=$idcard;?>[patient_type]" class="<?=$idcard;?>" value="IPD">
             </td>
 
             <td><!-- epidem_covid_cluster_type_id --></td>
