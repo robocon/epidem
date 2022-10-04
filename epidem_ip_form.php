@@ -426,6 +426,9 @@ if($q_opself->num_rows == 0){
             $isolate_place_id = $f_epidem['isolate_place_id'];
             $tests_reason_type_id = $f_epidem['tests_reason_type_id'];
 
+            $principal_diagnosis_icd10 = $f_epidem['principal_diagnosis_icd10'];
+            $diagnosis_icd10_list = $f_epidem['diagnosis_icd10_list'];
+
         }else{
             $uuid = strtoupper(guidv4());
         }
@@ -581,13 +584,24 @@ if($q_opself->num_rows == 0){
             </td>
             <td>
                 <!-- principal_diagnosis_icd10 -->
-                B342
-                <input type="hidden" name="<?=$idcard;?>[principal_diagnosis_icd10]" id="<?=$idcard;?>[principal_diagnosis_icd10]" class="<?=$idcard;?>" value="B342">
+                <?php 
+                // set default
+                if(empty($principal_diagnosis_icd10)){
+                    $principal_diagnosis_icd10 = 'U072';
+                }
+                ?>
+                <?=$principal_diagnosis_icd10;?>
+                <input type="hidden" name="<?=$idcard;?>[principal_diagnosis_icd10]" id="<?=$idcard;?>[principal_diagnosis_icd10]" class="<?=$idcard;?>" value="<?=$principal_diagnosis_icd10;?>">
             </td>
             <td>
                 <!-- diagnosis_icd10_list -->
-                B342
-                <input type="hidden" name="<?=$idcard;?>[diagnosis_icd10_list]" id="<?=$idcard;?>[diagnosis_icd10_list]" class="<?=$idcard;?>" value="B342">
+                <?php 
+                if(empty($diagnosis_icd10_list)){
+                    $diagnosis_icd10_list = 'U072';
+                }
+                ?>
+                <?=$diagnosis_icd10_list;?>
+                <input type="hidden" name="<?=$idcard;?>[diagnosis_icd10_list]" id="<?=$idcard;?>[diagnosis_icd10_list]" class="<?=$idcard;?>" value="<?=$diagnosis_icd10_list;?>">
             </td>
             <td>
                 <?php 

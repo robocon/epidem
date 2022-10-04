@@ -1,6 +1,6 @@
 <?php 
 session_start();
-include 'config.php';
+require_once 'config.php';
 $dbi = new mysqli(HOST,USER,PASS,DB);
 $dbi->query("SET NAMES UTF8");
 
@@ -367,6 +367,9 @@ if($q_opself->num_rows == 0){
         $curr_date = date('Y-m-d\TH:i:s.v'); // Format YYYY-mm-ddTHH:ii:ss.000
         $bg_color = '';
         $epidem_id = '';
+
+        $lab_report_date = date('Y-m-d');
+
         $q_epidem = $dbi->query("SELECT * FROM `epidem` WHERE `opsi_id` = '$opsi_id' ");
         if($q_epidem->num_rows > 0){ 
             $f_epidem = $q_epidem->fetch_assoc();
@@ -421,6 +424,12 @@ if($q_opself->num_rows == 0){
             $isolate_place_id = $f_epidem['isolate_place_id'];
             $tests_reason_type_id = $f_epidem['tests_reason_type_id'];
 
+            $principal_diagnosis_icd10 = $f_epidem['principal_diagnosis_icd10'];
+            $diagnosis_icd10_list = $f_epidem['diagnosis_icd10_list'];
+
+            $lab_report_date = $f_epidem['lab_report_date'];
+            $lab_report_result = $f_epidem['lab_report_result'];
+
         }else{
             $uuid = strtoupper(guidv4());
         }
@@ -434,7 +443,7 @@ if($q_opself->num_rows == 0){
             <!-- ข้อมูลทั่วไปของผู้ติดเชื้อ -->
             <td>
                 <!-- cid -->
-                <?=$idcard;?>
+                <a href="update_opcard.php?idcard=<?=$idcard;?>" target="_blank"><?=$idcard;?></a>
                 <input type="hidden" name="<?=$idcard;?>[cid]" id="<?=$idcard;?>[cid]" class="<?=$idcard;?>" value="<?=$idcard;?>">
                 <script>
                     all_users.push("<?=$idcard;?>");
@@ -569,6 +578,7 @@ if($q_opself->num_rows == 0){
                 <input type="hidden" name="<?=$idcard;?>[diagnosis_date]" id="<?=$idcard;?>[diagnosis_date]" class="<?=$idcard;?>" value="<?=$diagnosis_date;?>">
             </td>
             <td>
+                <!-- informer_name -->
                 <?php 
                 echo $informer_name;
                 ?>
@@ -576,13 +586,30 @@ if($q_opself->num_rows == 0){
             </td>
             <td>
                 <!-- principal_diagnosis_icd10 -->
-                B342
-                <input type="hidden" name="<?=$idcard;?>[principal_diagnosis_icd10]" id="<?=$idcard;?>[principal_diagnosis_icd10]" class="<?=$idcard;?>" value="B342">
+                <?php 
+                $icd10_list = array('U072','U071');
+                if(!in_array($principal_diagnosis_icd10, $icd10_list)){
+                    $extra_option = '<option value="'.$principal_diagnosis_icd10.'" selected="selected" >'.$principal_diagnosis_icd10.'</option>';
+                }
+                ?>
+                <select name="<?=$idcard;?>[principal_diagnosis_icd10]" id="<?=$idcard;?>[principal_diagnosis_icd10]" class="<?=$idcard;?>" >
+                    <?php 
+                    echo $extra_option;
+                    foreach ($icd10_list as $key => $value) { 
+                        $selected = ($principal_diagnosis_icd10==$value) ? 'selected="selected"' : '' ;
+                        ?><option value="<?=$value;?>" <?=$selected;?> ><?=$value;?></option><?php
+                    }
+                    ?>
+                </select>
             </td>
             <td>
                 <!-- diagnosis_icd10_list -->
-                B342
-                <input type="hidden" name="<?=$idcard;?>[diagnosis_icd10_list]" id="<?=$idcard;?>[diagnosis_icd10_list]" class="<?=$idcard;?>" value="B342">
+                <?php 
+                if(empty($diagnosis_icd10_list)){
+                    $diagnosis_icd10_list = 'U072';
+                }
+                ?>
+                <input type="text" name="<?=$idcard;?>[diagnosis_icd10_list]" id="<?=$idcard;?>[diagnosis_icd10_list]" class="<?=$idcard;?>" value="<?=$diagnosis_icd10_list;?>">
             </td>
             <td>
                 <?php 
@@ -832,8 +859,24 @@ if($q_opself->num_rows == 0){
                     ?>
                 </select>
             </td>
-            <td><!-- lab_report_date --></td>
-            <td><!-- lab_report_result --></td>
+            <td>
+                <!-- lab_report_date -->
+                <input type="text" name="<?=$idcard;?>[lab_report_date]" id="<?=$idcard;?>[lab_report_date]" value="<?=$lab_report_date;?>">
+            </td>
+            <td>
+                <!-- lab_report_result -->
+                <?php 
+                $lab_report_result_list = array('positive','negative');
+                ?>
+                <select name="<?=$idcard;?>[lab_report_result]" id="<?=$idcard;?>[lab_report_result]" class="<?=$idcard;?>" >
+                    <?php 
+                    foreach ($lab_report_result_list as $key => $value) { 
+                        $selected = ($lab_report_result==$value) ? 'selected="selected"' : '' ;
+                        ?><option value="<?=$value;?>" <?=$selected;?> ><?=$value;?></option><?php
+                    }
+                    ?>
+                </select>
+            </td>
             <td><!-- specimen_date --></td>
             <td><!-- specimen_place_id --></td>
             <td>
