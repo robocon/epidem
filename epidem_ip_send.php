@@ -1,18 +1,13 @@
 <?php 
-session_start();
 include 'config.php';
 $dbi = new mysqli(HOST,USER,PASS,DB);
+if($dbi->connect_errno){
+    echo $dbi->connect_errno;
+}
 $dbi->query("SET NAMES UTF8");
 
 $idcard = $_POST['idcard'];
 $main = $_POST[$idcard];
-
-function dump($txt)
-{
-    echo "<pre>";
-    var_dump($txt);
-    echo "</pre>";
-}
 
 // single: yes
 $epidem_id = $main['epidem_id'];

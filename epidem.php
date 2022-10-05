@@ -1,7 +1,9 @@
 <?php 
-session_start();
 include 'config.php';
 $dbi = new mysqli(HOST,USER,PASS,DB);
+if($dbi->connect_errno){
+    echo $dbi->connect_errno;
+}
 $dbi->query("SET NAMES UTF8");
 
 if(empty($_SESSION['sIdname'])){
@@ -31,7 +33,7 @@ if(empty($_SESSION['sIdname'])){
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>หน้าหลัก EPI DEM</title>
 </head>
 <body>
     <style>

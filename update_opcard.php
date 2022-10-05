@@ -1,24 +1,31 @@
 <?php 
-session_start();
 require_once 'config.php';
+
 $dbi = new mysqli(HOST,USER,PASS,DB);
-$dbi->query("SET NAMES UTF8");
-
-function dump($txt)
-{
-    echo "<pre>";
-    var_dump($txt);
-    echo "</pre>";
+if($dbi->connect_errno){
+    echo $dbi->connect_errno;
 }
-
+$dbi->query("SET NAMES UTF8");
 
 $action = $_POST['action'];
 if($action === 'save')
 {
-
-    dump($_REQUEST);
+    $idcard = $_POST['idcard'];
+    $sql = sprintf("UPDATE `opcard` SET `address`='%s', `tambol`='%s', `ampur`='%s', `changwat`='%s' WHERE `idcard` = '%s' ", 
+        $dbi->escape_string($_POST['address']),
+        $dbi->escape_string($_POST['tambol']),
+        $dbi->escape_string($_POST['ampur']),
+        $dbi->escape_string($_POST['changwat']),
+        $dbi->escape_string($idcard)
+    );
+    $update = $dbi->query($sql);
+    if(!empty($dbi->error)){
+        echo $dbi->error;
+        exit;
+    }
+    $_SESSION['x_msg'] = 'บันทึกข้อมูลเรียบร้อย';
+    header("Location: update_opcard.php?idcard=".$idcard);
     exit;
-
 }
 
 $sql = sprintf("SELECT `idcard`,`address`,`tambol`,`ampur`,`changwat`,CONCAT(`yot`,`name`,' ',`surname`) AS `ptname` FROM `opcard` WHERE `idcard` = '%s' ", $dbi->escape_string($_REQUEST['idcard']));
@@ -50,9 +57,7 @@ if($q->num_rows > 0)
     <style>
         *{
             font-family: "TH SarabunPSK";
-        }
-        ้h3{
-            font-size: 24px;
+            font-size: 18px;
         }
         li{
             list-style-type: none;
@@ -65,13 +70,20 @@ if($q->num_rows > 0)
             width:400px;
         }
     </style>
-
+    <?php 
+    if(!empty($_SESSION['x_msg'])){
+        ?>
+        <p style="border: 2px solid #c7c700;padding: 4px 16px;width: fit-content;background-color: lightyellow;"><?=$_SESSION['x_msg'];?></p>
+        <?php
+        unset($_SESSION['x_msg']);
+    }
+    ?>
     <form action="update_opcard.php" method="POST">
         <div>
             <table>
                 <tr>
                     <td colspan="2">
-                        <b>แก้ไขที่อยู่ <?=$ptname;?></b>
+                        <b>แก้ไขที่อยู่ <?=$ptname;?> บัตรปชช <?=$idcard;?></b>
                     </td>
                 </tr>
                 <tr>
@@ -100,7 +112,7 @@ if($q->num_rows > 0)
     </form>
 
     <div>
-        <h3>ค้นหาชื่อตำบล อำเภอ จังหวัด</h3>
+        <h3 style="font-size: 24px;">ค้นหาชื่อตำบล อำเภอ จังหวัด</h3>
         <input type="text" name="search" id="search">
         <div id="res"></div>
     </div>
@@ -136,7 +148,7 @@ if($q->num_rows > 0)
         document.getElementById('changwat').value=province;
 
         document.getElementById('res').style.display = 'none';
-        document.getElementById('search').innerHTML = '';
+        document.getElementById('search').value = '';
         
     }
     </script>

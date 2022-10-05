@@ -1,32 +1,10 @@
 <?php 
-session_start();
 require_once 'config.php';
 $dbi = new mysqli(HOST,USER,PASS,DB);
+if($dbi->connect_errno){
+    echo $dbi->connect_errno;
+}
 $dbi->query("SET NAMES UTF8");
-
-function dump($txt)
-{
-    echo "<pre>";
-    var_dump($txt);
-    echo "</pre>";
-}
-
-function guidv4($data = null) {
-    // Generate 16 bytes (128 bits) of random data or use the data passed into the function.
-    $data = $data ?? random_bytes(16);
-    assert(strlen($data) == 16);
-
-    // Set version to 0100
-    $data[6] = chr(ord($data[6]) & 0x0f | 0x40);
-    // Set bits 6-7 to 10
-    $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
-
-    // Output the 36 character UUID.
-    return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
-}
-
-// $password_hash = strtoupper(hash_hmac('sha256', MOPH_USER, SECRET_KEY));
-// dump($password_hash);
 
 // 
 // https://cvp1.moph.go.th/token?Action=get_moph_access_token&user=Surasak11512&password_hash=8072F6286DDDE4AF49085F680E4016AAFA0435DFD48EDA1C5FC6E1ACE5F5A6BD&hospital_code=11512
@@ -35,9 +13,12 @@ function guidv4($data = null) {
 // https://epidemcenter.moph.go.th/epidem/api/LookupTable?table_name=epidem_risk_history_type
 
 $date_search = $_POST['date_search'];
-$q_opself = $dbi->query("SELECT * FROM `opselfisolation_detail` WHERE `registerdate` = '$date_search'");
+$sql = sprintf("SELECT * FROM `opselfisolation_detail` WHERE `registerdate` = '%s'", $date_search);
+$q_opself = $dbi->query($sql);
 if($q_opself->num_rows == 0){
-    echo "ไม่พบข้อมูล";
+    ?>
+    <p>ไม่พบข้อมูลการลง Opself Isolation ในวันนี้</p>
+    <?php
     exit;
 }
 
@@ -443,7 +424,7 @@ if($q_opself->num_rows == 0){
             <!-- ข้อมูลทั่วไปของผู้ติดเชื้อ -->
             <td>
                 <!-- cid -->
-                <a href="update_opcard.php?idcard=<?=$idcard;?>" target="_blank"><?=$idcard;?></a>
+                <a href="javascript:void(0);" onclick="window.open('update_opcard.php?idcard=<?=$idcard;?>','MsgWindow','width=600,height=400')"><?=$idcard;?></a>
                 <input type="hidden" name="<?=$idcard;?>[cid]" id="<?=$idcard;?>[cid]" class="<?=$idcard;?>" value="<?=$idcard;?>">
                 <script>
                     all_users.push("<?=$idcard;?>");
@@ -588,7 +569,8 @@ if($q_opself->num_rows == 0){
                 <!-- principal_diagnosis_icd10 -->
                 <?php 
                 $icd10_list = array('U072','U071');
-                if(!in_array($principal_diagnosis_icd10, $icd10_list)){
+                $extra_option = '';
+                if(!empty($principal_diagnosis_icd10) && !in_array($principal_diagnosis_icd10, $icd10_list)){
                     $extra_option = '<option value="'.$principal_diagnosis_icd10.'" selected="selected" >'.$principal_diagnosis_icd10.'</option>';
                 }
                 ?>
