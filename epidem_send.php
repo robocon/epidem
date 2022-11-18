@@ -85,12 +85,12 @@ $cluster_latitude = 0;
 $cluster_longitude = 0;
 
 $epidem_lab_confirm_type_id = $main['epidem_lab_confirm_type_id'];
-// $lab_report_date = $main['lab_report_date'];
-// $lab_report_result = $main['lab_report_result'];
+$lab_report_date = $main['lab_report_date'];
+$lab_report_result = $main['lab_report_result'];
 // $specimen_date = $main['specimen_date'];
 // $specimen_place_id = $main['specimen_place_id'];
-$lab_report_date = '';
-$lab_report_result = '';
+// $lab_report_date = '';
+// $lab_report_result = '';
 $specimen_date = '';
 $specimen_place_id = 0;
 

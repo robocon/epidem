@@ -843,12 +843,12 @@ if($q_opself->num_rows == 0){
             </td>
             <td>
                 <!-- lab_report_date -->
-                <input type="text" name="<?=$idcard;?>[lab_report_date]" id="<?=$idcard;?>[lab_report_date]" value="<?=$lab_report_date;?>">
+                <input type="text" name="<?=$idcard;?>[lab_report_date]" id="<?=$idcard;?>[lab_report_date]" class="<?=$idcard;?>" value="<?=$lab_report_date;?>">
             </td>
             <td>
                 <!-- lab_report_result -->
                 <?php 
-                $lab_report_result_list = array('positive','negative');
+                $lab_report_result_list = array('positive','negative','detected');
                 ?>
                 <select name="<?=$idcard;?>[lab_report_result]" id="<?=$idcard;?>[lab_report_result]" class="<?=$idcard;?>" >
                     <?php 
